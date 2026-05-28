@@ -1,0 +1,47 @@
+"use client";
+
+import Link from "next/link";
+import { Bell, CircleHelp, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { executiveTabs, quickActions } from "@/lib/routes";
+
+export function Topbar() {
+  return (
+    <div className="sticky top-0 z-20 border-b bg-background-app/95 px-4 py-3 backdrop-blur lg:px-6">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <label className="flex min-h-11 max-w-2xl flex-1 items-center gap-3 rounded-lg border bg-background-card px-3 text-sm text-foreground-muted shadow-[var(--shadow-soft)]">
+          <Search className="size-4" aria-hidden="true" />
+          <span>Search clients, appointments, approvals</span>
+        </label>
+        <div className="flex items-center gap-2">
+          {quickActions.map((action) => (
+            <Link
+              className="hidden min-h-10 items-center rounded-md border bg-background-card px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent-gold-muted md:inline-flex"
+              href={action.href}
+              key={action.href}
+            >
+              {action.label}
+            </Link>
+          ))}
+          <Button type="button" variant="ghost" size="icon" aria-label="Help">
+            <CircleHelp className="size-5" aria-hidden="true" />
+          </Button>
+          <Button type="button" variant="ghost" size="icon" aria-label="Notifications">
+            <Bell className="size-5" aria-hidden="true" />
+          </Button>
+        </div>
+      </div>
+      <nav aria-label="Executive command sections" className="mt-3 flex gap-2 overflow-x-auto pb-1">
+        {executiveTabs.map((tab) => (
+          <Link
+            className="min-h-8 shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-foreground-muted transition-colors hover:bg-accent-gold-muted hover:text-foreground"
+            href={tab.href}
+            key={tab.label}
+          >
+            {tab.label}
+          </Link>
+        ))}
+      </nav>
+    </div>
+  );
+}

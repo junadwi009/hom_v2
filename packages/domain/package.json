@@ -1,0 +1,29 @@
+{
+  "name": "@hom/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./api": "./src/api/index.ts",
+    "./auth": "./src/auth/index.ts",
+    "./catalog": "./src/catalog/index.ts",
+    "./clients": "./src/clients/index.ts",
+    "./practitioners": "./src/practitioners/index.ts",
+    "./rbac": "./src/rbac/index.ts",
+    "./audit": "./src/audit/index.ts",
+    "./services": "./src/services/index.ts",
+    "./shared": "./src/shared/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.7"
+  }
+}

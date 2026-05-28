@@ -1,0 +1,78 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(0.985 0.01 85);
+  --foreground: oklch(0.205 0.02 55);
+  --background-app: oklch(0.965 0.018 82);
+  --background-sidebar: oklch(0.21 0.028 52);
+  --background-sidebar-muted: oklch(0.27 0.032 54);
+  --background-card: oklch(0.995 0.006 90);
+  --foreground-muted: oklch(0.47 0.018 55);
+  --accent-gold: oklch(0.72 0.105 82);
+  --accent-gold-muted: oklch(0.91 0.052 86);
+  --accent-green: oklch(0.62 0.095 145);
+  --accent-red: oklch(0.58 0.12 28);
+  --accent-blue: oklch(0.54 0.085 245);
+  --accent-amber: oklch(0.75 0.12 78);
+  --border-subtle: oklch(0.86 0.02 78);
+  --ring: oklch(0.72 0.105 82);
+  --shadow-soft: 0 16px 45px rgb(68 54 39 / 8%);
+  --sidebar-foreground: oklch(0.93 0.018 82);
+  --sidebar-muted: oklch(0.74 0.028 78);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-background-app: var(--background-app);
+  --color-background-sidebar: var(--background-sidebar);
+  --color-background-card: var(--background-card);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-accent-gold: var(--accent-gold);
+  --color-accent-gold-muted: var(--accent-gold-muted);
+  --color-accent-green: var(--accent-green);
+  --color-accent-red: var(--accent-red);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-amber: var(--accent-amber);
+  --color-border-subtle: var(--border-subtle);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+* {
+  border-color: var(--border-subtle);
+}
+
+::selection {
+  background: var(--accent-gold-muted);
+  color: var(--foreground);
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  outline-color: var(--ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
