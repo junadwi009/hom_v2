@@ -1,43 +1,70 @@
-# Dependencies
-node_modules/
-.pnpm-store/
-
-# Next.js
-.next/
-out/
-
-# Storybook
-storybook-static/
-
-# Playwright
-test-results/
-playwright-report/
-blob-report/
-
-# Test and tool caches
-coverage/
-.turbo/
-.vercel/
-supabase/.temp/
-supabase/.branches/
-
-# Environment files
+# Environment and secrets
 .env
 .env.*
 !.env.example
 
-# Logs
+# Dependencies and builds
+node_modules/
+.pnpm-store/
+.next/
+out/
+dist/
+build/
+coverage/
+.turbo/
+.vercel/
+
+# Test and report artifacts
+playwright-report/
+test-results/
+storybook-static/
+blob-report/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Supabase local temp
+supabase/.temp/
+supabase/.branches/
+
+# Local uploaded/generated artifact packs
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Generated PDFs and exported documents
+pdfs/
+*.pdf
+
+# Reference screenshots and image renders
+reference_screenshots/
+_renders*/
+renders/
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+
 # TypeScript
 *.tsbuildinfo
 
-# OS and editor files
+# OS/editor noise
 .DS_Store
 Thumbs.db
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.example.json
 .idea/
+
+# Local scratch/export markdown files
+*_Addendum.md
+*_Roadmap.md
+*_Pack.md
+*_Export.md
+*_Draft.md

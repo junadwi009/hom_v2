@@ -1,0 +1,12 @@
+docs/** linguist-documentation
+codex/** linguist-documentation
+*.md linguist-documentation
+*.pdf linguist-documentation
+*.png linguist-generated
+*.jpg linguist-generated
+*.jpeg linguist-generated
+*.webp linguist-generated
+*.gif linguist-generated
+storybook-static/** linguist-generated
+playwright-report/** linguist-generated
+test-results/** linguist-generated
