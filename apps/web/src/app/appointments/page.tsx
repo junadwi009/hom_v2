@@ -1,6 +1,10 @@
-import { ModuleMockPage } from "@/features/module-page/module-mock-page";
-import { modulePages } from "@/lib/mock-data";
+import { AppointmentsCatalogPage } from "@/features/appointments/appointments-catalog-page";
+import { loadAppointmentsPage } from "@/features/appointments/appointments-page-loader";
 
-export default function AppointmentsPage() {
-  return <ModuleMockPage {...modulePages.appointments} />;
+export const dynamic = "force-dynamic";
+
+export default async function AppointmentsPage() {
+  const state = await loadAppointmentsPage();
+
+  return <AppointmentsCatalogPage state={state} />;
 }

@@ -49,7 +49,7 @@ test.describe("HOM Studio OS shell", () => {
     await page.goto("/clients");
 
     await expect(page.getByRole("heading", { name: "Clients", exact: true })).toBeVisible();
-    await expect(page.getByRole("cell", { name: "Mock Client Alpha" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Mock Client Alpha" }).first()).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Client" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Status" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Primary Practitioner" })).toBeVisible();
@@ -89,5 +89,32 @@ test.describe("HOM Studio OS shell", () => {
     await expect(page.getByRole("button", { name: /delete/i })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /book/i })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /appointment/i })).toHaveCount(0);
+  });
+
+  test("renders repository-fed mock appointments without sensitive or write controls", async ({ page }) => {
+    await page.goto("/appointments");
+
+    await expect(page.getByRole("heading", { name: "Appointments", exact: true })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Mock Client Alpha" }).first()).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Mock Practitioner One" }).first()).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Mock Intro Assessment" }).first()).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Schedule" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Client" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Practitioner" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Service" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: /phone/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /email/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /contact/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /payment/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /clinical/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /whatsapp/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /package/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /create/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /edit/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /reschedule/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /cancel/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /complete/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /no[- ]?show/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /delete/i })).toHaveCount(0);
   });
 });
