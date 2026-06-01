@@ -2,14 +2,14 @@ project_id = "hom-studio-os-v2"
 
 [api]
 enabled = true
-port = 54321
+port = 55421
 schemas = ["public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
 [db]
-port = 54322
-shadow_port = 54320
+port = 55422
+shadow_port = 55420
 major_version = 15
 
 [db.seed]
@@ -18,7 +18,7 @@ sql_paths = ["./seed.sql"]
 
 [studio]
 enabled = true
-port = 54323
+port = 55423
 api_url = "http://127.0.0.1"
 
 [auth]
@@ -27,3 +27,15 @@ site_url = "http://127.0.0.1:3000"
 additional_redirect_urls = ["http://localhost:3000"]
 jwt_expiry = 3600
 enable_signup = false
+
+[inbucket]
+enabled = true
+port = 55424
+smtp_port = 55425
+pop3_port = 55426
+
+[analytics]
+enabled = true
+port = 55427
+vector_port = 55428
+backend = "postgres"
