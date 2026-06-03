@@ -77,7 +77,7 @@ export function createSupabaseAppointmentRepository(
       }
 
       const response = await request
-        .order("starts_at", { ascending: true })
+        .order("starts_at", { ascending: false })
         .range(from, to);
 
       if (response.error) {

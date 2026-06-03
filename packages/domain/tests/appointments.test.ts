@@ -6,9 +6,12 @@ import {
   appointmentSourceSchema,
   appointmentStatusSchema,
   cancelAppointmentInputSchema,
+  completeAppointmentInputSchema,
   createAppointmentInputSchema,
+  createScheduledAppointmentInputSchema,
   createMockAppointmentRepository,
   mockAppointments,
+  markNoShowAppointmentInputSchema,
   rescheduleAppointmentInputSchema,
   updateAppointmentStatusInputSchema,
 } from "../src/appointments";
@@ -142,11 +145,32 @@ describe("appointment domain schemas", () => {
       rescheduleAppointmentInputSchema.safeParse({
         id: mockAppointmentId,
         startsAt: "2026-06-03T03:00:00.000Z",
-        endsAt: "2026-06-03T04:00:00.000Z",
-        durationMinutes: 60,
         reason: "Mock client requested another available time.",
       }).success,
     ).toBe(true);
+    expect(
+      rescheduleAppointmentInputSchema.safeParse({
+        id: mockAppointmentId,
+        startsAt: "2026-06-03T03:00:00.000Z",
+        endsAt: "2026-06-03T04:00:00.000Z",
+        durationMinutes: 60,
+        reason: "Mock override attempt.",
+      }).success,
+    ).toBe(false);
+    expect(
+      rescheduleAppointmentInputSchema.safeParse({
+        id: mockAppointmentId,
+        startsAt: "2026-06-03T03:00:00.000Z",
+        reason: "",
+      }).success,
+    ).toBe(false);
+    expect(
+      rescheduleAppointmentInputSchema.safeParse({
+        id: mockAppointmentId,
+        startsAt: "2026-06-03T03:00:00.000Z",
+        reason: "x".repeat(281),
+      }).success,
+    ).toBe(false);
     expect(
       cancelAppointmentInputSchema.safeParse({
         id: mockAppointmentId,
@@ -154,11 +178,72 @@ describe("appointment domain schemas", () => {
       }).success,
     ).toBe(true);
     expect(
+      cancelAppointmentInputSchema.safeParse({
+        id: mockAppointmentId,
+        reason: "",
+      }).success,
+    ).toBe(false);
+    expect(
+      completeAppointmentInputSchema.safeParse({
+        id: mockAppointmentId,
+      }).success,
+    ).toBe(true);
+    expect(
+      completeAppointmentInputSchema.safeParse({
+        id: mockAppointmentId,
+        reason: "Completion does not accept a reason.",
+      }).success,
+    ).toBe(false);
+    expect(
+      markNoShowAppointmentInputSchema.safeParse({
+        id: mockAppointmentId,
+      }).success,
+    ).toBe(true);
+    expect(
+      markNoShowAppointmentInputSchema.safeParse({
+        id: mockAppointmentId,
+        reason: "Mock short operational no-show note.",
+      }).success,
+    ).toBe(true);
+    expect(
+      markNoShowAppointmentInputSchema.safeParse({
+        id: mockAppointmentId,
+        reason: "x".repeat(281),
+      }).success,
+    ).toBe(false);
+    expect(
+      cancelAppointmentInputSchema.safeParse({
+        id: mockAppointmentId,
+        reason: "x".repeat(281),
+      }).success,
+    ).toBe(false);
+    expect(
       updateAppointmentStatusInputSchema.safeParse({
         id: mockAppointmentId,
         status: "completed",
       }).success,
     ).toBe(true);
+  });
+
+  it("keeps create-only RPC input free of duration and end-time overrides", () => {
+    expect(
+      createScheduledAppointmentInputSchema.safeParse({
+        clientId: mockAppointments[0].clientId,
+        practitionerId: mockAppointments[0].practitionerId,
+        serviceId: mockAppointments[0].serviceId,
+        startsAt: "2026-06-03T03:00:00.000Z",
+      }).success,
+    ).toBe(true);
+    expect(
+      createScheduledAppointmentInputSchema.safeParse({
+        clientId: mockAppointments[0].clientId,
+        practitionerId: mockAppointments[0].practitionerId,
+        serviceId: mockAppointments[0].serviceId,
+        startsAt: "2026-06-03T03:00:00.000Z",
+        durationMinutes: 30,
+        endsAt: "2026-06-03T03:30:00.000Z",
+      }).success,
+    ).toBe(false);
   });
 });
 

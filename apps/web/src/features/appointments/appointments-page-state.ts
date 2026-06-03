@@ -9,6 +9,7 @@ export type AppointmentTableRow = {
   practitionerName: string;
   serviceName: string;
   duration: string;
+  isModified: boolean;
   status: Appointment["status"];
   source: string;
 };
@@ -48,6 +49,8 @@ export function toAppointmentTableRow(
     practitionerName: appointment.practitionerName,
     serviceName: appointment.serviceName,
     duration: `${appointment.durationMinutes} min`,
+    isModified:
+      Date.parse(appointment.updatedAt) > Date.parse(appointment.createdAt),
     status: appointment.status,
     source: appointment.source.replaceAll("_", " "),
   };

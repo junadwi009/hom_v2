@@ -25,6 +25,9 @@ export const appointmentSourceSchema = z.enum([
 const durationMinutesSchema = z.number().int().min(1).max(480);
 const operationalNotesSummarySchema = z.string().trim().min(1).max(280);
 const operationalReasonSchema = z.string().trim().min(1).max(500);
+const cancellationReasonSchema = z.string().trim().min(1).max(280);
+const rescheduleReasonSchema = z.string().trim().min(1).max(280);
+const noShowReasonSchema = z.string().trim().min(1).max(280);
 
 function hasValidTimeWindow({
   startsAt,
@@ -102,24 +105,42 @@ export const createAppointmentInputSchema = z
     path: ["endsAt"],
   });
 
+export const createScheduledAppointmentInputSchema = z
+  .object({
+    clientId: catalogIdSchema,
+    practitionerId: catalogIdSchema,
+    serviceId: catalogIdSchema,
+    startsAt: catalogTimestampSchema,
+    source: appointmentSourceSchema.default("admin"),
+    notesSummary: operationalNotesSummarySchema.optional(),
+  })
+  .strict();
+
 export const rescheduleAppointmentInputSchema = z
   .object({
     id: catalogIdSchema,
     startsAt: catalogTimestampSchema,
-    endsAt: catalogTimestampSchema,
-    durationMinutes: durationMinutesSchema,
-    reason: operationalReasonSchema,
+    reason: rescheduleReasonSchema,
   })
-  .strict()
-  .refine(hasValidTimeWindow, {
-    message: "Appointment end time must be after start time.",
-    path: ["endsAt"],
-  });
+  .strict();
 
 export const cancelAppointmentInputSchema = z
   .object({
     id: catalogIdSchema,
-    reason: operationalReasonSchema,
+    reason: cancellationReasonSchema,
+  })
+  .strict();
+
+export const completeAppointmentInputSchema = z
+  .object({
+    id: catalogIdSchema,
+  })
+  .strict();
+
+export const markNoShowAppointmentInputSchema = z
+  .object({
+    id: catalogIdSchema,
+    reason: noShowReasonSchema.optional(),
   })
   .strict();
 

@@ -126,6 +126,7 @@ describe("toAppointmentTableRow", () => {
       practitionerName: "Mock Practitioner One",
       serviceName: "Mock Intro Assessment",
       duration: "60 min",
+      isModified: false,
       status: "scheduled",
       source: "admin",
     });
@@ -140,5 +141,14 @@ describe("toAppointmentTableRow", () => {
         "notesSummary",
       ]),
     );
+  });
+
+  it("marks appointments whose updated timestamp is later than creation", () => {
+    expect(
+      toAppointmentTableRow({
+        ...mockAppointment,
+        updatedAt: "2026-06-02T01:00:00.000Z",
+      }).isModified,
+    ).toBe(true);
   });
 });

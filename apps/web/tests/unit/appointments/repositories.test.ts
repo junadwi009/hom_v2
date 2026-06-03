@@ -238,7 +238,7 @@ describe("Supabase appointment repository", () => {
       ],
       gte: [{ column: "starts_at", value: "2026-06-01T00:00:00.000Z" }],
       lt: [{ column: "starts_at", value: "2026-06-02T00:00:00.000Z" }],
-      order: { column: "starts_at", options: { ascending: true } },
+      order: { column: "starts_at", options: { ascending: false } },
       range: { from: 10, to: 19 },
     });
     expect(calls[0]?.select.columns).toContain("clients(full_name)");

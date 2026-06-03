@@ -7,7 +7,10 @@ import type {
   appointmentSourceSchema,
   appointmentStatusSchema,
   cancelAppointmentInputSchema,
+  completeAppointmentInputSchema,
   createAppointmentInputSchema,
+  createScheduledAppointmentInputSchema,
+  markNoShowAppointmentInputSchema,
   rescheduleAppointmentInputSchema,
   updateAppointmentStatusInputSchema,
 } from "./schemas";
@@ -22,11 +25,20 @@ export type AppointmentListResult = z.infer<
 export type CreateAppointmentInput = z.infer<
   typeof createAppointmentInputSchema
 >;
+export type CreateScheduledAppointmentInput = z.infer<
+  typeof createScheduledAppointmentInputSchema
+>;
 export type RescheduleAppointmentInput = z.infer<
   typeof rescheduleAppointmentInputSchema
 >;
 export type CancelAppointmentInput = z.infer<
   typeof cancelAppointmentInputSchema
+>;
+export type CompleteAppointmentInput = z.infer<
+  typeof completeAppointmentInputSchema
+>;
+export type MarkNoShowAppointmentInput = z.infer<
+  typeof markNoShowAppointmentInputSchema
 >;
 export type UpdateAppointmentStatusInput = z.infer<
   typeof updateAppointmentStatusInputSchema

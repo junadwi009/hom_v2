@@ -6,6 +6,9 @@ import {
 } from "@hom/domain/auth";
 
 import { getAuthBoundary } from "@/lib/auth/boundary";
+import { getAuthMode } from "@/lib/env/app-mode";
+
+import { SupabaseAuthBoundaryError } from "./errors";
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   const user = await getAuthBoundary().getCurrentUser();
@@ -25,4 +28,20 @@ export async function getRequiredCurrentUser(): Promise<CurrentUser> {
 
 export async function getShellUser(): Promise<ShellUser> {
   return toShellUser(await getRequiredCurrentUser());
+}
+
+export async function getOptionalShellUser(): Promise<ShellUser | null> {
+  try {
+    const user = await getCurrentUser();
+    return user ? toShellUser(user) : null;
+  } catch (error) {
+    if (
+      getAuthMode() === "supabase" &&
+      error instanceof SupabaseAuthBoundaryError
+    ) {
+      return null;
+    }
+
+    throw error;
+  }
 }

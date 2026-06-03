@@ -6,11 +6,42 @@ import { MetricCard } from "@/components/hom/metric-card";
 import { PageHeader } from "@/components/layout/page-header";
 
 import { AppointmentsTable } from "./appointments-table";
+import type { CancelAppointmentFormAction } from "./cancel-appointment-types";
+import type { CompleteAppointmentFormAction } from "./complete-appointment-types";
 import type { AppointmentsPageState } from "./appointments-page-state";
+import { CreateAppointmentSheet } from "./create-appointment-sheet";
+import type {
+  CreateAppointmentFormAction,
+  CreateAppointmentOptionsState,
+} from "./create-appointment-types";
+import type { RescheduleAppointmentFormAction } from "./reschedule-appointment-types";
+import type { MarkNoShowAppointmentFormAction } from "./mark-no-show-appointment-types";
 
 export function AppointmentsCatalogPage({
+  canCreateAppointment,
+  canCancelAppointment,
+  canCompleteAppointment,
+  canMarkNoShowAppointment,
+  canRescheduleAppointment,
+  cancelAction,
+  completeAction,
+  createAction,
+  createOptionsState,
+  markNoShowAction,
+  rescheduleAction,
   state,
 }: {
+  canCreateAppointment?: boolean;
+  canCancelAppointment?: boolean;
+  canCompleteAppointment?: boolean;
+  canMarkNoShowAppointment?: boolean;
+  canRescheduleAppointment?: boolean;
+  cancelAction?: CancelAppointmentFormAction;
+  completeAction?: CompleteAppointmentFormAction;
+  createAction?: CreateAppointmentFormAction;
+  createOptionsState: CreateAppointmentOptionsState;
+  markNoShowAction?: MarkNoShowAppointmentFormAction;
+  rescheduleAction?: RescheduleAppointmentFormAction;
   state: AppointmentsPageState;
 }) {
   return (
@@ -18,14 +49,31 @@ export function AppointmentsCatalogPage({
       <PageHeader
         eyebrow="Schedule"
         title="Appointments"
-        description="Read-only appointment schedule for operational review."
+        description="Appointment schedule for safe operational review and approved changes."
+        actions={
+          <CreateAppointmentSheet
+            action={createAction}
+            canCreateAppointment={canCreateAppointment}
+            optionsState={createOptionsState}
+          />
+        }
       />
       <AppointmentsSummary state={state} />
       <DashboardCard
         title="Appointment schedule"
-        description="Current appointment time, ownership, service, and status."
+        description="Current appointment time, ownership, service, status, and approved actions."
       >
-        <AppointmentsContent state={state} />
+        <AppointmentsContent
+          canCancelAppointment={canCancelAppointment}
+          canCompleteAppointment={canCompleteAppointment}
+          canMarkNoShowAppointment={canMarkNoShowAppointment}
+          canRescheduleAppointment={canRescheduleAppointment}
+          cancelAction={cancelAction}
+          completeAction={completeAction}
+          markNoShowAction={markNoShowAction}
+          rescheduleAction={rescheduleAction}
+          state={state}
+        />
       </DashboardCard>
     </>
   );
@@ -64,9 +112,42 @@ function AppointmentsSummary({ state }: { state: AppointmentsPageState }) {
   );
 }
 
-function AppointmentsContent({ state }: { state: AppointmentsPageState }) {
+function AppointmentsContent({
+  canCancelAppointment,
+  canCompleteAppointment,
+  canMarkNoShowAppointment,
+  canRescheduleAppointment,
+  cancelAction,
+  completeAction,
+  markNoShowAction,
+  rescheduleAction,
+  state,
+}: {
+  canCancelAppointment?: boolean;
+  canCompleteAppointment?: boolean;
+  canMarkNoShowAppointment?: boolean;
+  canRescheduleAppointment?: boolean;
+  cancelAction?: CancelAppointmentFormAction;
+  completeAction?: CompleteAppointmentFormAction;
+  markNoShowAction?: MarkNoShowAppointmentFormAction;
+  rescheduleAction?: RescheduleAppointmentFormAction;
+  state: AppointmentsPageState;
+}) {
   if (state.status === "ready") {
-    return <AppointmentsTable rows={state.rows} />;
+    return (
+      <AppointmentsTable
+        canCancelAppointment={canCancelAppointment}
+        canCompleteAppointment={canCompleteAppointment}
+        canMarkNoShowAppointment={canMarkNoShowAppointment}
+        canRescheduleAppointment={canRescheduleAppointment}
+        cancelAction={cancelAction}
+        completeAction={completeAction}
+        dataMode={state.source}
+        markNoShowAction={markNoShowAction}
+        rescheduleAction={rescheduleAction}
+        rows={state.rows}
+      />
+    );
   }
 
   if (state.status === "empty") {

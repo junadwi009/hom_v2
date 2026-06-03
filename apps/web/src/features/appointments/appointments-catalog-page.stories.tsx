@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import { AppointmentsCatalogPage } from "./appointments-catalog-page";
 import type { AppointmentsPageState } from "./appointments-page-state";
+import type { CreateAppointmentOptionsState } from "./create-appointment-types";
 
 const readyState = {
   status: "ready",
@@ -16,6 +17,7 @@ const readyState = {
       practitionerName: "Mock Practitioner One",
       serviceName: "Mock Intro Assessment",
       duration: "60 min",
+      isModified: false,
       status: "scheduled",
       source: "admin",
     },
@@ -26,16 +28,28 @@ const readyState = {
       practitionerName: "Mock Practitioner Two",
       serviceName: "Mock Private Session",
       duration: "50 min",
+      isModified: true,
       status: "confirmed",
       source: "import",
     },
   ],
 } satisfies AppointmentsPageState;
 
+const createOptionsState = {
+  status: "ready",
+  dataMode: "mock",
+  options: {
+    clients: [],
+    practitioners: [],
+    services: [],
+  },
+} satisfies CreateAppointmentOptionsState;
+
 const meta = {
   title: "Appointments/AppointmentsCatalogPage",
   component: AppointmentsCatalogPage,
   args: {
+    createOptionsState,
     state: readyState,
   },
 } satisfies Meta<typeof AppointmentsCatalogPage>;

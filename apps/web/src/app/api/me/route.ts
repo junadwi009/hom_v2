@@ -6,18 +6,24 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { SupabaseAuthBoundaryError } from "@/lib/auth/errors";
 import { getAuthMode } from "@/lib/env/app-mode";
 
 export const dynamic = "force-dynamic";
 
-const supabaseAuthNotImplementedMessage =
-  "Supabase auth mode is not enabled in Phase 3A. Keep HOM_AUTH_MODE=mock until real auth is approved.";
-
 export async function GET() {
+  return getMeResponse();
+}
+
+type GetMeResponseOptions = {
+  loadCurrentUser?: typeof getCurrentUser;
+};
+
+export async function getMeResponse(options: GetMeResponseOptions = {}) {
   const authMode = getAuthMode();
 
   try {
-    const user = await getCurrentUser();
+    const user = await (options.loadCurrentUser ?? getCurrentUser)();
 
     if (!user) {
       return NextResponse.json(
@@ -38,13 +44,18 @@ export async function GET() {
       ),
     );
   } catch (error) {
-    if (authMode === "supabase") {
+    if (error instanceof SupabaseAuthBoundaryError) {
+      const status = error.code === "APP_USER_INACTIVE" ? 403 : 401;
+
       return NextResponse.json(
         apiError({
-          code: "NOT_IMPLEMENTED",
-          message: supabaseAuthNotImplementedMessage,
+          code: status === 403 ? "FORBIDDEN" : "UNAUTHORIZED",
+          message:
+            status === 403
+              ? "Your studio profile is not active."
+              : "Authentication is required.",
         }),
-        { status: 501 },
+        { status },
       );
     }
 

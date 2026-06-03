@@ -5,6 +5,8 @@ import {
 
 import { getAuthMode } from "@/lib/env/app-mode";
 
+import { createSupabaseAuthBoundary } from "./supabase-auth-boundary";
+
 export function getAuthBoundary(): AuthBoundary {
   const mode = getAuthMode();
 
@@ -12,7 +14,5 @@ export function getAuthBoundary(): AuthBoundary {
     return createMockAuthBoundary();
   }
 
-  throw new Error(
-    "Supabase auth mode is planned but not enabled in this Phase 2 foundation.",
-  );
+  return createSupabaseAuthBoundary();
 }

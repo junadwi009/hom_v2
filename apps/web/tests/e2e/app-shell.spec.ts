@@ -91,7 +91,7 @@ test.describe("HOM Studio OS shell", () => {
     await expect(page.getByRole("button", { name: /appointment/i })).toHaveCount(0);
   });
 
-  test("renders repository-fed mock appointments without sensitive or write controls", async ({ page }) => {
+  test("renders repository-fed mock appointments with eligible status actions only", async ({ page }) => {
     await page.goto("/appointments");
 
     await expect(page.getByRole("heading", { name: "Appointments", exact: true })).toBeVisible();
@@ -109,12 +109,109 @@ test.describe("HOM Studio OS shell", () => {
     await expect(page.getByRole("columnheader", { name: /clinical/i })).toHaveCount(0);
     await expect(page.getByRole("columnheader", { name: /whatsapp/i })).toHaveCount(0);
     await expect(page.getByRole("columnheader", { name: /package/i })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /create/i })).toHaveCount(0);
+    await expect(page.getByText("Modified", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: /edit/i })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /reschedule/i })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /cancel/i })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /complete/i })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /no[- ]?show/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /reschedule appointment for/i })).toHaveCount(2);
+    await expect(page.getByRole("button", { name: /cancel appointment for/i })).toHaveCount(2);
+    await expect(page.getByRole("button", { name: /complete appointment for/i })).toHaveCount(2);
+    await expect(page.getByRole("button", { name: /mark no-show for/i })).toHaveCount(2);
     await expect(page.getByRole("button", { name: /delete/i })).toHaveCount(0);
+  });
+
+  test("opens a preview-safe cancel appointment dialog without fake mock persistence", async ({ page }) => {
+    await page.goto("/appointments");
+
+    await page.getByRole("button", { name: /Cancel appointment for.*Mock Client Alpha/i }).click();
+    await expect(page.getByRole("dialog", { name: "Cancel appointment" })).toBeVisible();
+    await expect(page.getByLabel("Cancellation reason")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Confirm Cancellation" })).toBeDisabled();
+    await expect(page.getByText(/Preview mode: cancellation is disabled/i)).toBeVisible();
+    await expect(page.getByLabel("Phone", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Payment", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Clinical notes", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("WhatsApp", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Package", { exact: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Close cancel appointment form" }).click();
+    await expect(page.getByRole("dialog", { name: "Cancel appointment" })).toHaveCount(0);
+  });
+
+  test("opens a preview-safe reschedule appointment dialog without fake mock persistence", async ({ page }) => {
+    await page.goto("/appointments");
+
+    await page.getByRole("button", { name: /Reschedule appointment for.*Mock Client Alpha/i }).click();
+    await expect(page.getByRole("dialog", { name: "Reschedule appointment" })).toBeVisible();
+    await expect(page.getByLabel("New start time")).toBeVisible();
+    await expect(page.getByLabel("Reschedule duration")).toHaveValue("60 min");
+    await expect(page.getByLabel("Reschedule duration")).toHaveAttribute("readonly", "");
+    await expect(page.getByLabel("Reschedule reason")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Confirm Reschedule" })).toBeDisabled();
+    await expect(page.getByText(/Preview mode: rescheduling is disabled/i)).toBeVisible();
+    await expect(page.getByLabel("Phone", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Payment", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Clinical notes", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("WhatsApp", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Package", { exact: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Close reschedule appointment form" }).click();
+    await expect(page.getByRole("dialog", { name: "Reschedule appointment" })).toHaveCount(0);
+  });
+
+  test("opens a preview-safe complete appointment dialog without fake mock persistence", async ({ page }) => {
+    await page.goto("/appointments");
+
+    await page.getByRole("button", { name: /Complete appointment for.*Mock Client Alpha/i }).click();
+    await expect(page.getByRole("dialog", { name: "Complete appointment" })).toBeVisible();
+    await expect(page.getByText(/Preview mode: completion is disabled/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Confirm Completion" })).toBeDisabled();
+    await expect(page.getByLabel("Phone", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Payment", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Clinical notes", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("WhatsApp", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Package", { exact: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Close complete appointment form" }).click();
+    await expect(page.getByRole("dialog", { name: "Complete appointment" })).toHaveCount(0);
+  });
+
+  test("opens a preview-safe no-show dialog without fake mock persistence", async ({ page }) => {
+    await page.goto("/appointments");
+
+    await page.getByRole("button", { name: /Mark no-show for.*Mock Client Alpha/i }).click();
+    await expect(page.getByRole("dialog", { name: "Mark appointment no-show" })).toBeVisible();
+    await expect(page.getByLabel("Optional no-show note")).toBeVisible();
+    await expect(page.getByText(/Preview mode: no-show marking is disabled/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Confirm No-show" })).toBeDisabled();
+    await expect(page.getByLabel("Phone", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Payment", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Clinical notes", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("WhatsApp", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Package", { exact: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Close mark appointment no-show form" }).click();
+    await expect(page.getByRole("dialog", { name: "Mark appointment no-show" })).toHaveCount(0);
+  });
+
+  test("opens a preview-safe create appointment sheet without fake mock persistence", async ({ page }) => {
+    await page.goto("/appointments");
+
+    await page.getByRole("button", { name: "New Appointment" }).click();
+    await expect(page.getByRole("dialog", { name: "New Appointment" })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Client" })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Practitioner" })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Service" })).toBeVisible();
+    await expect(page.getByLabel("Start time")).toBeVisible();
+    await expect(page.getByLabel("Source")).toHaveValue("admin");
+    await expect(page.getByLabel("Source")).toHaveAttribute("readonly", "");
+    await page.getByRole("combobox", { name: "Service" }).selectOption({
+      label: "Mock Intro Assessment",
+    });
+    await expect(page.getByLabel("Duration")).toHaveValue("60 minutes");
+    await expect(page.getByLabel("Duration")).toHaveAttribute("readonly", "");
+    await expect(page.getByRole("button", { name: "Create Appointment" })).toBeDisabled();
+    await expect(page.getByText(/Preview mode: saving is disabled/i)).toBeVisible();
+    await expect(page.getByLabel("Phone", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Payment", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Clinical notes", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("WhatsApp", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Package", { exact: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Close appointment form" }).click();
+    await expect(page.getByRole("dialog", { name: "New Appointment" })).toHaveCount(0);
   });
 });

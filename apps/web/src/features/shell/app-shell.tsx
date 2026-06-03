@@ -9,9 +9,11 @@ import { Topbar } from "@/features/shell/topbar";
 export function AppShell({
   children,
   shellUser,
+  showSignOut = false,
 }: {
   children: ReactNode;
   shellUser: ShellUser;
+  showSignOut?: boolean;
 }) {
   return (
     <div className="min-h-screen bg-background-app">
@@ -34,7 +36,7 @@ export function AppShell({
         </div>
       </aside>
       <div className="lg:pl-72">
-        <Topbar />
+        <Topbar showSignOut={showSignOut} />
         <motion.main
           className="mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-7xl flex-col gap-6 px-4 py-6 lg:px-6"
           initial={false}

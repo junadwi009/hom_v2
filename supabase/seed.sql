@@ -1,3 +1,77 @@
+-- Local-only auth fixture. Never reuse this dummy credential outside local Supabase.
+insert into auth.users (
+  instance_id,
+  id,
+  aud,
+  role,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  confirmation_token,
+  recovery_token,
+  email_change_token_new,
+  email_change,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at,
+  updated_at
+)
+values (
+  '00000000-0000-0000-0000-000000000000',
+  '93000000-0000-4000-8000-000000000001',
+  'authenticated',
+  'authenticated',
+  'local.studio.director@example.invalid',
+  crypt('LocalOnly-HOM-Phase4K-2026!', gen_salt('bf')),
+  now(),
+  '',
+  '',
+  '',
+  '',
+  '{"provider": "email", "providers": ["email"]}'::jsonb,
+  '{"full_name": "Local Studio Director"}'::jsonb,
+  now(),
+  now()
+)
+on conflict (id) do update
+set
+  email = excluded.email,
+  encrypted_password = excluded.encrypted_password,
+  email_confirmed_at = excluded.email_confirmed_at,
+  confirmation_token = excluded.confirmation_token,
+  recovery_token = excluded.recovery_token,
+  email_change_token_new = excluded.email_change_token_new,
+  email_change = excluded.email_change,
+  raw_app_meta_data = excluded.raw_app_meta_data,
+  raw_user_meta_data = excluded.raw_user_meta_data,
+  updated_at = excluded.updated_at;
+
+insert into auth.identities (
+  id,
+  user_id,
+  provider_id,
+  identity_data,
+  provider,
+  last_sign_in_at,
+  created_at,
+  updated_at
+)
+values (
+  '95000000-0000-4000-8000-000000000001',
+  '93000000-0000-4000-8000-000000000001',
+  '93000000-0000-4000-8000-000000000001',
+  '{"sub": "93000000-0000-4000-8000-000000000001", "email": "local.studio.director@example.invalid", "email_verified": true}'::jsonb,
+  'email',
+  now(),
+  now(),
+  now()
+)
+on conflict (provider_id, provider) do update
+set
+  user_id = excluded.user_id,
+  identity_data = excluded.identity_data,
+  updated_at = excluded.updated_at;
+
 insert into public.roles (name, description)
 values
   ('super_admin', 'Technical/system owner with every permission.'),
@@ -116,6 +190,35 @@ select roles.id, permissions.id
 from matrix
 join public.roles on roles.name = matrix.role_name
 join public.permissions on permissions.key = matrix.permission_key
+on conflict do nothing;
+
+insert into public.app_users (
+  id,
+  auth_user_id,
+  full_name,
+  email,
+  status
+)
+values (
+  '94000000-0000-4000-8000-000000000001',
+  '93000000-0000-4000-8000-000000000001',
+  'Local Studio Director',
+  'local.studio.director@example.invalid',
+  'active'
+)
+on conflict (id) do update
+set
+  auth_user_id = excluded.auth_user_id,
+  full_name = excluded.full_name,
+  email = excluded.email,
+  status = excluded.status;
+
+insert into public.user_roles (user_id, role_id)
+select
+  '94000000-0000-4000-8000-000000000001',
+  roles.id
+from public.roles
+where roles.name = 'studio_director'
 on conflict do nothing;
 
 insert into public.practitioners (id, app_user_id, display_name, email, status)

@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, CircleHelp, Search } from "lucide-react";
+import { Bell, CircleHelp, LogOut, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { signOutAction } from "@/features/auth/auth-actions";
 import { executiveTabs, quickActions } from "@/lib/routes";
 
-export function Topbar() {
+export function Topbar({ showSignOut = false }: { showSignOut?: boolean }) {
   return (
     <div className="sticky top-0 z-20 border-b bg-background-app/95 px-4 py-3 backdrop-blur lg:px-6">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -29,6 +30,13 @@ export function Topbar() {
           <Button type="button" variant="ghost" size="icon" aria-label="Notifications">
             <Bell className="size-5" aria-hidden="true" />
           </Button>
+          {showSignOut ? (
+            <form action={signOutAction}>
+              <Button type="submit" variant="ghost" size="icon" aria-label="Sign out">
+                <LogOut className="size-5" aria-hidden="true" />
+              </Button>
+            </form>
+          ) : null}
         </div>
       </div>
       <nav aria-label="Executive command sections" className="mt-3 flex gap-2 overflow-x-auto pb-1">

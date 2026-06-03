@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppShell } from "@/features/shell/app-shell";
-import { getShellUser } from "@/lib/auth/current-user";
+import { getOptionalShellUser } from "@/lib/auth/current-user";
+import { getAuthMode } from "@/lib/env/app-mode";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,7 +25,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const shellUser = await getShellUser();
+  const shellUser = await getOptionalShellUser();
 
   return (
     <html
@@ -32,7 +33,16 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background-app text-foreground">
-        <AppShell shellUser={shellUser}>{children}</AppShell>
+        {shellUser ? (
+          <AppShell
+            shellUser={shellUser}
+            showSignOut={getAuthMode() === "supabase"}
+          >
+            {children}
+          </AppShell>
+        ) : (
+          children
+        )}
       </body>
     </html>
   );
