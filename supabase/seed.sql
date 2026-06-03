@@ -99,6 +99,7 @@ values
   ('can_view_appointments', 'View appointment records.'),
   ('can_manage_appointments', 'Create and update appointment records.'),
   ('can_reschedule_appointments', 'Reschedule appointments.'),
+  ('can_manage_client_packages', 'Assign and manage client package ownership.'),
   ('can_view_clinical_cases', 'View restricted clinical case summaries.'),
   ('can_manage_clinical_cases', 'Create and update restricted clinical case summaries.'),
   ('can_view_session_notes', 'View session notes.'),
@@ -139,6 +140,7 @@ with matrix(role_name, permission_key) as (
     ('studio_director', 'can_view_appointments'),
     ('studio_director', 'can_manage_appointments'),
     ('studio_director', 'can_reschedule_appointments'),
+    ('studio_director', 'can_manage_client_packages'),
     ('studio_director', 'can_view_clinical_cases'),
     ('studio_director', 'can_manage_clinical_cases'),
     ('studio_director', 'can_view_session_notes'),
@@ -402,3 +404,114 @@ set
   to_status = excluded.to_status,
   reason = excluded.reason,
   metadata = excluded.metadata;
+
+insert into public.packages (
+  id,
+  name,
+  package_type,
+  total_sessions,
+  validity_days,
+  price_idr,
+  status
+)
+values
+  ('50000000-0000-4000-8000-000000000001', 'Mock Intro Package', 'intro', 2, 14, 750000, 'active'),
+  ('50000000-0000-4000-8000-000000000002', 'Mock 4 Session Pack', 'session_pack', 4, 45, 1800000, 'active'),
+  ('50000000-0000-4000-8000-000000000003', 'Mock 8 Session Pack', 'session_pack', 8, 60, 3200000, 'active'),
+  ('50000000-0000-4000-8000-000000000004', 'Mock Monthly Membership', 'membership', 8, 30, 3000000, 'active'),
+  ('50000000-0000-4000-8000-000000000005', 'Mock Studio Membership', 'membership', 12, 30, 4200000, 'active'),
+  ('50000000-0000-4000-8000-000000000006', 'Mock Duo Trial Pack', 'intro', 3, 21, 1100000, 'inactive'),
+  ('50000000-0000-4000-8000-000000000007', 'Mock Long Validity Pack', 'session_pack', 6, 90, 2600000, 'active'),
+  ('50000000-0000-4000-8000-000000000008', 'Mock Archived Intro Package', 'intro', 1, 7, 350000, 'archived'),
+  ('50000000-0000-4000-8000-000000000009', 'Mock Maintenance Pack', 'session_pack', 5, 75, 2100000, 'active'),
+  ('50000000-0000-4000-8000-000000000010', 'Mock Weekly Membership', 'membership', 4, 28, 1600000, 'inactive')
+on conflict (id) do update
+set
+  name = excluded.name,
+  package_type = excluded.package_type,
+  total_sessions = excluded.total_sessions,
+  validity_days = excluded.validity_days,
+  price_idr = excluded.price_idr,
+  status = excluded.status;
+
+insert into public.client_packages (
+  id,
+  client_id,
+  package_id,
+  purchased_at,
+  expires_at,
+  total_sessions,
+  remaining_sessions,
+  status
+)
+values
+  ('51000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000001', '2026-06-03T09:00:00+07:00', '2026-06-17T09:00:00+07:00', 2, 2, 'active'),
+  ('51000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000002', '2026-06-04T09:00:00+07:00', '2026-07-19T09:00:00+07:00', 4, 4, 'active'),
+  ('51000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000002', '50000000-0000-4000-8000-000000000003', '2026-06-05T09:00:00+07:00', '2026-08-04T09:00:00+07:00', 8, 8, 'active'),
+  ('51000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000003', '50000000-0000-4000-8000-000000000004', '2026-06-06T09:00:00+07:00', '2026-07-06T09:00:00+07:00', 8, 8, 'active'),
+  ('51000000-0000-4000-8000-000000000005', '10000000-0000-4000-8000-000000000004', '50000000-0000-4000-8000-000000000005', '2026-06-07T09:00:00+07:00', '2026-07-07T09:00:00+07:00', 12, 12, 'active'),
+  ('51000000-0000-4000-8000-000000000006', '10000000-0000-4000-8000-000000000005', '50000000-0000-4000-8000-000000000007', '2026-06-08T09:00:00+07:00', '2026-09-06T09:00:00+07:00', 6, 6, 'active'),
+  ('51000000-0000-4000-8000-000000000007', '10000000-0000-4000-8000-000000000006', '50000000-0000-4000-8000-000000000009', '2026-06-09T09:00:00+07:00', '2026-08-23T09:00:00+07:00', 5, 5, 'active'),
+  ('51000000-0000-4000-8000-000000000008', '10000000-0000-4000-8000-000000000007', '50000000-0000-4000-8000-000000000001', '2026-06-10T09:00:00+07:00', '2026-06-24T09:00:00+07:00', 2, 2, 'active'),
+  ('51000000-0000-4000-8000-000000000009', '10000000-0000-4000-8000-000000000009', '50000000-0000-4000-8000-000000000002', '2026-06-11T09:00:00+07:00', '2026-07-26T09:00:00+07:00', 4, 4, 'active'),
+  ('51000000-0000-4000-8000-000000000010', '10000000-0000-4000-8000-000000000010', '50000000-0000-4000-8000-000000000003', '2026-06-12T09:00:00+07:00', '2026-08-11T09:00:00+07:00', 8, 8, 'active'),
+  ('51000000-0000-4000-8000-000000000011', '10000000-0000-4000-8000-000000000011', '50000000-0000-4000-8000-000000000004', '2026-06-13T09:00:00+07:00', '2026-07-13T09:00:00+07:00', 8, 8, 'active'),
+  ('51000000-0000-4000-8000-000000000012', '10000000-0000-4000-8000-000000000012', '50000000-0000-4000-8000-000000000005', '2026-06-14T09:00:00+07:00', '2026-07-14T09:00:00+07:00', 12, 12, 'active'),
+  ('51000000-0000-4000-8000-000000000013', '10000000-0000-4000-8000-000000000013', '50000000-0000-4000-8000-000000000007', '2026-06-15T09:00:00+07:00', '2026-09-13T09:00:00+07:00', 6, 6, 'active'),
+  ('51000000-0000-4000-8000-000000000014', '10000000-0000-4000-8000-000000000014', '50000000-0000-4000-8000-000000000009', '2026-06-16T09:00:00+07:00', '2026-08-30T09:00:00+07:00', 5, 5, 'active'),
+  ('51000000-0000-4000-8000-000000000015', '10000000-0000-4000-8000-000000000015', '50000000-0000-4000-8000-000000000001', '2026-06-17T09:00:00+07:00', '2026-07-01T09:00:00+07:00', 2, 2, 'active'),
+  ('51000000-0000-4000-8000-000000000016', '10000000-0000-4000-8000-000000000016', '50000000-0000-4000-8000-000000000002', '2026-06-18T09:00:00+07:00', '2026-08-02T09:00:00+07:00', 4, 4, 'active'),
+  ('51000000-0000-4000-8000-000000000017', '10000000-0000-4000-8000-000000000017', '50000000-0000-4000-8000-000000000003', '2026-06-19T09:00:00+07:00', '2026-08-18T09:00:00+07:00', 8, 8, 'active'),
+  ('51000000-0000-4000-8000-000000000018', '10000000-0000-4000-8000-000000000018', '50000000-0000-4000-8000-000000000004', '2026-06-20T09:00:00+07:00', '2026-07-20T09:00:00+07:00', 8, 8, 'active'),
+  ('51000000-0000-4000-8000-000000000019', '10000000-0000-4000-8000-000000000019', '50000000-0000-4000-8000-000000000005', '2026-04-01T09:00:00+07:00', '2026-05-01T09:00:00+07:00', 12, 12, 'expired'),
+  ('51000000-0000-4000-8000-000000000020', '10000000-0000-4000-8000-000000000020', '50000000-0000-4000-8000-000000000007', '2026-04-05T09:00:00+07:00', '2026-07-04T09:00:00+07:00', 6, 6, 'expired'),
+  ('51000000-0000-4000-8000-000000000021', '10000000-0000-4000-8000-000000000021', '50000000-0000-4000-8000-000000000009', '2026-03-20T09:00:00+07:00', '2026-06-04T09:00:00+07:00', 5, 5, 'expired'),
+  ('51000000-0000-4000-8000-000000000022', '10000000-0000-4000-8000-000000000022', '50000000-0000-4000-8000-000000000006', '2026-05-01T09:00:00+07:00', '2026-05-22T09:00:00+07:00', 3, 3, 'cancelled'),
+  ('51000000-0000-4000-8000-000000000023', '10000000-0000-4000-8000-000000000023', '50000000-0000-4000-8000-000000000010', '2026-05-05T09:00:00+07:00', '2026-06-02T09:00:00+07:00', 4, 4, 'cancelled'),
+  ('51000000-0000-4000-8000-000000000024', '10000000-0000-4000-8000-000000000024', '50000000-0000-4000-8000-000000000001', '2026-05-10T09:00:00+07:00', '2026-05-24T09:00:00+07:00', 2, 2, 'cancelled')
+on conflict (id) do update
+set
+  client_id = excluded.client_id,
+  package_id = excluded.package_id,
+  purchased_at = excluded.purchased_at,
+  expires_at = excluded.expires_at,
+  total_sessions = excluded.total_sessions,
+  remaining_sessions = excluded.remaining_sessions,
+  status = excluded.status;
+
+insert into public.package_usage_history (
+  id,
+  client_package_id,
+  appointment_id,
+  change_type,
+  quantity,
+  before_remaining,
+  after_remaining,
+  reason,
+  actor_app_user_id,
+  created_at
+)
+select
+  ('52000000-0000-4000-8000-' || right(client_packages.id::text, 12))::uuid,
+  client_packages.id,
+  null,
+  'assigned',
+  client_packages.total_sessions,
+  0,
+  client_packages.total_sessions,
+  'Mock local assignment.',
+  '94000000-0000-4000-8000-000000000001',
+  client_packages.purchased_at
+from public.client_packages
+where client_packages.id::text like '51000000-0000-4000-8000-%'
+on conflict (id) do update
+set
+  client_package_id = excluded.client_package_id,
+  appointment_id = excluded.appointment_id,
+  change_type = excluded.change_type,
+  quantity = excluded.quantity,
+  before_remaining = excluded.before_remaining,
+  after_remaining = excluded.after_remaining,
+  reason = excluded.reason,
+  actor_app_user_id = excluded.actor_app_user_id,
+  created_at = excluded.created_at;

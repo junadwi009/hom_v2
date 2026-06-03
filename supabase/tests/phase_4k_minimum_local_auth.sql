@@ -41,8 +41,9 @@ select pg_temp.assert_true(
     where full_name = 'Local Studio Director'
       and 'studio_director' = any(roles)
       and 'can_manage_appointments' = any(permissions)
+      and 'can_manage_client_packages' = any(permissions)
   ),
-  'local Studio Director context must include appointment management permission'
+  'local Studio Director context must include appointment and client package management permissions'
 );
 
 select *
