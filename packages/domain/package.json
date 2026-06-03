@@ -10,6 +10,7 @@
     "./catalog": "./src/catalog/index.ts",
     "./appointments": "./src/appointments/index.ts",
     "./clients": "./src/clients/index.ts",
+    "./packages": "./src/packages/index.ts",
     "./practitioners": "./src/practitioners/index.ts",
     "./rbac": "./src/rbac/index.ts",
     "./audit": "./src/audit/index.ts",

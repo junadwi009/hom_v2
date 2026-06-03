@@ -90,6 +90,16 @@ describe("RBAC constants and schemas", () => {
       expect(rolesWithPermission).toEqual(["super_admin", "studio_director"]);
     }
   });
+
+  it("allows only owner-level roles to manage client packages in this phase", () => {
+    const rolesWithPermission = roleNames.filter((role) =>
+      (rolePermissionMatrix[role] as readonly PermissionKey[]).includes(
+        "can_manage_client_packages",
+      ),
+    );
+
+    expect(rolesWithPermission).toEqual(["super_admin", "studio_director"]);
+  });
 });
 
 describe("RBAC helpers", () => {
