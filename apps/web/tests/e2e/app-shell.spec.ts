@@ -7,6 +7,8 @@ const routes = [
   { path: "/clients", title: "Clients" },
   { path: "/practitioners", title: "Practitioners" },
   { path: "/services", title: "Services" },
+  { path: "/packages", title: "Packages" },
+  { path: "/client-packages", title: "Client Packages" },
   { path: "/live-chat", title: "Live Chat" },
   { path: "/knowledge-studio", title: "Knowledge Studio" },
   { path: "/financials", title: "Financials" },
@@ -89,6 +91,77 @@ test.describe("HOM Studio OS shell", () => {
     await expect(page.getByRole("button", { name: /delete/i })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /book/i })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /appointment/i })).toHaveCount(0);
+  });
+
+  test("renders repository-fed mock packages without write or sensitive controls", async ({ page }) => {
+    await page.goto("/packages");
+
+    await expect(page.getByRole("heading", { name: "Packages", exact: true })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Mock Intro Package" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Package" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Type" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Sessions" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Validity" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Price" })).toBeVisible();
+    await expect(page.getByText("Rp 750.000")).toBeVisible();
+    await expect(page.getByRole("button", { name: /create/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /edit/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /delete/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /assign/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /deduct/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /payment/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /clinical/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /whatsapp/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /contact/i })).toHaveCount(0);
+  });
+
+  test("renders repository-fed mock client packages without write or sensitive controls", async ({ page }) => {
+    await page.goto("/client-packages");
+
+    await expect(page.getByRole("heading", { name: "Client Packages", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Assign Package" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Mock Client Alpha" }).first()).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Mock Intro Package" }).first()).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Client" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Package" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Remaining" })).toBeVisible();
+    await expect(page.getByText("2 / 2")).toBeVisible();
+    await expect(page.getByRole("button", { name: /create/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /edit/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /delete/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /deduct/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /payment/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /clinical/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /whatsapp/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /contact/i })).toHaveCount(0);
+  });
+
+  test("opens a preview-safe assign package sheet without fake mock persistence", async ({ page }) => {
+    await page.goto("/client-packages");
+
+    await page.getByRole("button", { name: "Assign Package" }).click();
+    const dialog = page.getByRole("dialog", { name: "Assign Package" });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("combobox", { name: "Client" })).toBeVisible();
+    await expect(dialog.getByRole("combobox", { name: "Package" })).toBeVisible();
+    await expect(dialog.getByLabel("Purchase date and time")).toBeVisible();
+    await dialog.getByRole("combobox", { name: "Package" }).selectOption({
+      label: "Mock Intro Package",
+    });
+    await dialog.getByLabel("Purchase date and time").fill("2026-06-03T09:00");
+    await expect(dialog.getByText("Total Sessions")).toBeVisible();
+    await expect(dialog.getByText("Starting Remaining")).toBeVisible();
+    await expect(dialog.getByText("2026-06-17")).toBeVisible();
+    await expect(
+      dialog.getByRole("button", { name: "Assign Package" }),
+    ).toBeDisabled();
+    await expect(dialog.getByText(/Preview mode: saving is disabled/i)).toBeVisible();
+    await expect(dialog.getByLabel("Phone", { exact: true })).toHaveCount(0);
+    await expect(dialog.getByLabel("Payment", { exact: true })).toHaveCount(0);
+    await expect(dialog.getByLabel("Clinical notes", { exact: true })).toHaveCount(0);
+    await expect(dialog.getByLabel("WhatsApp", { exact: true })).toHaveCount(0);
+    await dialog.getByRole("button", { name: "Close package assignment form" }).click();
+    await expect(page.getByRole("dialog", { name: "Assign Package" })).toHaveCount(0);
   });
 
   test("renders repository-fed mock appointments with eligible status actions only", async ({ page }) => {
