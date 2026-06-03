@@ -12,7 +12,7 @@ const mappedContext = {
   email: "local.studio.director@example.invalid",
   status: "active",
   roles: ["studio_director"],
-  permissions: ["can_manage_appointments"],
+  permissions: ["can_manage_appointments", "can_manage_client_packages"],
 };
 
 describe("Supabase auth boundary", () => {
@@ -36,7 +36,7 @@ describe("Supabase auth boundary", () => {
     await expect(boundary.requireAuthenticatedUser()).resolves.toMatchObject({
       fullName: "Local Studio Director",
       roles: ["studio_director"],
-      permissions: ["can_manage_appointments"],
+      permissions: ["can_manage_appointments", "can_manage_client_packages"],
     });
     expect(rpc).toHaveBeenCalledWith("get_current_app_user_context");
   });

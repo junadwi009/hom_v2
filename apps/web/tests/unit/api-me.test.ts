@@ -35,6 +35,7 @@ describe("GET /api/me", () => {
       },
     });
     expect(body.data.user.permissions).toContain("can_manage_knowledge");
+    expect(body.data.user.permissions).toContain("can_manage_client_packages");
   });
 
   it("returns the mapped local user safely in Supabase auth mode", async () => {
@@ -48,7 +49,7 @@ describe("GET /api/me", () => {
         email: "local.studio.director@example.invalid",
         status: "active",
         roles: ["studio_director"],
-        permissions: ["can_manage_appointments"],
+        permissions: ["can_manage_appointments", "can_manage_client_packages"],
       }),
     });
     const body = await response.json();
@@ -57,7 +58,7 @@ describe("GET /api/me", () => {
     expect(body.data.user).toMatchObject({
       fullName: "Local Studio Director",
       roles: ["studio_director"],
-      permissions: ["can_manage_appointments"],
+      permissions: ["can_manage_appointments", "can_manage_client_packages"],
     });
     expect(body.meta.authMode).toBe("supabase");
   });
