@@ -158,3 +158,10 @@ export const assignClientPackageInputSchema = z
     purchasedAt: catalogTimestampSchema,
   })
   .strict();
+
+export const deductClientPackageSessionInputSchema = z
+  .object({
+    appointmentId: catalogIdSchema,
+    clientPackageId: catalogIdSchema,
+  })
+  .strict();

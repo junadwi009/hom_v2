@@ -12,6 +12,7 @@ const readyState = {
   rows: [
     {
       id: "40000000-0000-4000-8000-000000000001",
+      clientId: "10000000-0000-4000-8000-000000000001",
       scheduled: "01 Jun 2026, 10:00",
       clientName: "Mock Client Alpha",
       practitionerName: "Mock Practitioner One",
@@ -23,6 +24,7 @@ const readyState = {
     },
     {
       id: "40000000-0000-4000-8000-000000000002",
+      clientId: "10000000-0000-4000-8000-000000000002",
       scheduled: "01 Jun 2026, 12:00",
       clientName: "Mock Client Beta",
       practitionerName: "Mock Practitioner Two",

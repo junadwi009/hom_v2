@@ -121,6 +121,7 @@ describe("toAppointmentTableRow", () => {
 
     expect(row).toEqual({
       id: mockAppointment.id,
+      clientId: mockAppointment.clientId,
       scheduled: "1 Jun 2026, 10:00",
       clientName: "Mock Client Alpha",
       practitionerName: "Mock Practitioner One",

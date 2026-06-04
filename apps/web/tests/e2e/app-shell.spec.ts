@@ -9,6 +9,7 @@ const routes = [
   { path: "/services", title: "Services" },
   { path: "/packages", title: "Packages" },
   { path: "/client-packages", title: "Client Packages" },
+  { path: "/payments", title: "Payments" },
   { path: "/live-chat", title: "Live Chat" },
   { path: "/knowledge-studio", title: "Knowledge Studio" },
   { path: "/financials", title: "Financials" },
@@ -115,6 +116,96 @@ test.describe("HOM Studio OS shell", () => {
     await expect(page.getByRole("columnheader", { name: /contact/i })).toHaveCount(0);
   });
 
+  test("renders repository-fed mock payments without write or sensitive controls", async ({ page }) => {
+    await page.goto("/payments");
+
+    await expect(page.getByRole("heading", { name: "Payments", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Payments" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Mock Client Alpha" }).first()).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Client" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Package" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Amount" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Method" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Status" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Reference" })).toBeVisible();
+    await expect(page.getByText("Rp 750.000").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Create Payment" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Actions" })).toBeVisible();
+    // Pending rows expose mark paid / cancel transitions only.
+    await expect(page.getByRole("button", { name: /Mark payment paid for/i }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /Cancel payment for/i }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /edit/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /delete/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /refund/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /card/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /bank account/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /gateway/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /cvv/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /phone/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /email/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /clinical/i })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /whatsapp/i })).toHaveCount(0);
+  });
+
+  test("opens a preview-safe create payment dialog with conditional paid date and no fake mock persistence", async ({ page }) => {
+    await page.goto("/payments");
+
+    await page.getByRole("button", { name: "Create Payment" }).click();
+    const dialog = page.getByRole("dialog", { name: "Create Payment" });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/Preview mode: saving is disabled/i)).toBeVisible();
+    await expect(dialog.locator('select[name="clientId"]')).toBeVisible();
+    await expect(dialog.locator('select[name="clientPackageId"]')).toBeVisible();
+    await expect(dialog.locator('select[name="paymentMethod"]')).toBeVisible();
+    await expect(dialog.locator('select[name="status"]')).toBeVisible();
+    await expect(dialog.locator('input[name="amountIdr"]')).toBeVisible();
+
+    // Pending hides the paid date; paid reveals a required paid date.
+    await expect(dialog.locator('input[name="paidAtLocal"]')).toHaveCount(0);
+    await dialog.locator('select[name="status"]').selectOption("paid");
+    await expect(dialog.locator('input[name="paidAtLocal"]')).toBeVisible();
+    await dialog.locator('select[name="status"]').selectOption("pending");
+    await expect(dialog.locator('input[name="paidAtLocal"]')).toHaveCount(0);
+
+    await expect(
+      dialog.getByRole("button", { name: "Create Payment", exact: true }),
+    ).toBeDisabled();
+
+    await expect(dialog.getByLabel("Card number", { exact: true })).toHaveCount(0);
+    await expect(dialog.getByLabel("Bank account", { exact: true })).toHaveCount(0);
+    await expect(dialog.getByLabel("CVV", { exact: true })).toHaveCount(0);
+    await expect(dialog.getByLabel("Phone", { exact: true })).toHaveCount(0);
+    await expect(dialog.getByLabel("Clinical notes", { exact: true })).toHaveCount(0);
+    await expect(dialog.getByLabel("WhatsApp", { exact: true })).toHaveCount(0);
+
+    await dialog.getByRole("button", { name: "Close create payment dialog" }).click();
+    await expect(page.getByRole("dialog", { name: "Create Payment" })).toHaveCount(0);
+  });
+
+  test("opens preview-safe mark paid and cancel payment dialogs without fake mock persistence", async ({ page }) => {
+    await page.goto("/payments");
+
+    await page.getByRole("button", { name: /Mark payment paid for/i }).first().click();
+    const markPaidDialog = page.getByRole("dialog", { name: "Mark payment paid" });
+    await expect(markPaidDialog).toBeVisible();
+    await expect(markPaidDialog.getByText(/Preview mode: marking paid is disabled/i)).toBeVisible();
+    await expect(markPaidDialog.locator('input[name="paidAtLocal"]')).toBeVisible();
+    await expect(markPaidDialog.getByRole("button", { name: "Confirm Paid" })).toBeDisabled();
+    await markPaidDialog.getByRole("button", { name: "Close mark payment paid dialog" }).click();
+    await expect(page.getByRole("dialog", { name: "Mark payment paid" })).toHaveCount(0);
+
+    await page.getByRole("button", { name: /Cancel payment for/i }).first().click();
+    const cancelDialog = page.getByRole("dialog", { name: "Cancel payment" });
+    await expect(cancelDialog).toBeVisible();
+    await expect(cancelDialog.getByText(/Preview mode: cancellation is disabled/i)).toBeVisible();
+    await expect(cancelDialog.getByLabel("Cancellation reason")).toBeVisible();
+    await expect(cancelDialog.getByRole("button", { name: "Confirm Cancellation" })).toBeDisabled();
+    await expect(cancelDialog.getByLabel("Card number", { exact: true })).toHaveCount(0);
+    await expect(cancelDialog.getByLabel("Bank account", { exact: true })).toHaveCount(0);
+    await cancelDialog.getByRole("button", { name: "Close cancel payment dialog" }).click();
+    await expect(page.getByRole("dialog", { name: "Cancel payment" })).toHaveCount(0);
+  });
+
   test("renders repository-fed mock client packages without write or sensitive controls", async ({ page }) => {
     await page.goto("/client-packages");
 
@@ -162,6 +253,35 @@ test.describe("HOM Studio OS shell", () => {
     await expect(dialog.getByLabel("WhatsApp", { exact: true })).toHaveCount(0);
     await dialog.getByRole("button", { name: "Close package assignment form" }).click();
     await expect(page.getByRole("dialog", { name: "Assign Package" })).toHaveCount(0);
+  });
+
+  test("shows a deduct session control on completed appointments only", async ({ page }) => {
+    await page.goto("/appointments");
+
+    await expect(page.getByRole("heading", { name: "Appointments", exact: true })).toBeVisible();
+    // Exactly one completed mock appointment exists, so exactly one deduct control.
+    await expect(page.getByRole("button", { name: /Deduct session for/i })).toHaveCount(1);
+  });
+
+  test("opens a preview-safe deduct session dialog without fake mock persistence", async ({ page }) => {
+    await page.goto("/appointments");
+
+    await page.getByRole("button", { name: /Deduct session for/i }).click();
+    const dialog = page.getByRole("dialog", { name: "Deduct Session" });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/Preview mode: deduction is disabled/i)).toBeVisible();
+    await dialog.getByRole("combobox", { name: "Package" }).selectOption({ index: 1 });
+    await expect(dialog.getByText("Remaining Before")).toBeVisible();
+    await expect(dialog.getByText("Remaining After")).toBeVisible();
+    await expect(
+      dialog.getByRole("button", { name: "Deduct Session", exact: true }),
+    ).toBeDisabled();
+    await expect(dialog.getByLabel("Phone", { exact: true })).toHaveCount(0);
+    await expect(dialog.getByLabel("Payment", { exact: true })).toHaveCount(0);
+    await expect(dialog.getByLabel("Clinical notes", { exact: true })).toHaveCount(0);
+    await expect(dialog.getByLabel("WhatsApp", { exact: true })).toHaveCount(0);
+    await dialog.getByRole("button", { name: "Close deduct session form" }).click();
+    await expect(page.getByRole("dialog", { name: "Deduct Session" })).toHaveCount(0);
   });
 
   test("renders repository-fed mock appointments with eligible status actions only", async ({ page }) => {

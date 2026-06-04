@@ -4,6 +4,7 @@ export type AppointmentDataSource = "mock" | "supabase";
 
 export type AppointmentTableRow = {
   id: string;
+  clientId: string;
   scheduled: string;
   clientName: string;
   practitionerName: string;
@@ -44,6 +45,7 @@ export function toAppointmentTableRow(
 ): AppointmentTableRow {
   return {
     id: appointment.id,
+    clientId: appointment.clientId,
     scheduled: toScheduleLabel(appointment.startsAt),
     clientName: appointment.clientName,
     practitionerName: appointment.practitionerName,

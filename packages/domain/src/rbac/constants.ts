@@ -23,6 +23,8 @@ export const permissionKeys = [
   "can_manage_appointments",
   "can_reschedule_appointments",
   "can_manage_client_packages",
+  "can_view_payments",
+  "can_manage_payments",
   "can_view_clinical_cases",
   "can_manage_clinical_cases",
   "can_view_session_notes",

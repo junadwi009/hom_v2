@@ -13,6 +13,7 @@ export {
   packageUsageHistoryListResultSchema,
   packageUsageHistorySchema,
   assignClientPackageInputSchema,
+  deductClientPackageSessionInputSchema,
 } from "./schemas";
 export {
   createMockClientPackageRepository,
@@ -42,4 +43,5 @@ export type {
   PackageUsageHistoryListQuery,
   PackageUsageHistoryListResult,
   AssignClientPackageInput,
+  DeductClientPackageSessionInput,
 } from "./types";

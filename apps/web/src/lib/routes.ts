@@ -13,6 +13,7 @@ import {
   Settings,
   Stethoscope,
   Users,
+  Wallet,
 } from "lucide-react";
 
 export const primaryNavigation = [
@@ -23,6 +24,7 @@ export const primaryNavigation = [
   { label: "Services", href: "/services", icon: ClipboardList },
   { label: "Packages", href: "/packages", icon: Package },
   { label: "Client Packages", href: "/client-packages", icon: BadgeCheck },
+  { label: "Payments", href: "/payments", icon: Wallet },
   { label: "Live Chat", href: "/live-chat", icon: MessageSquareText },
   { label: "Knowledge Studio", href: "/knowledge-studio", icon: FolderOpen },
   { label: "Behavior Intelligence", href: "/behavior-intelligence", icon: BarChart3 },

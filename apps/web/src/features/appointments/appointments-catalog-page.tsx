@@ -14,6 +14,10 @@ import type {
   CreateAppointmentFormAction,
   CreateAppointmentOptionsState,
 } from "./create-appointment-types";
+import type {
+  DeductSessionFormAction,
+  DeductSessionOptionsState,
+} from "./deduct-session-types";
 import type { RescheduleAppointmentFormAction } from "./reschedule-appointment-types";
 import type { MarkNoShowAppointmentFormAction } from "./mark-no-show-appointment-types";
 
@@ -21,12 +25,15 @@ export function AppointmentsCatalogPage({
   canCreateAppointment,
   canCancelAppointment,
   canCompleteAppointment,
+  canDeductSession,
   canMarkNoShowAppointment,
   canRescheduleAppointment,
   cancelAction,
   completeAction,
   createAction,
   createOptionsState,
+  deductAction,
+  deductOptionsByAppointmentId,
   markNoShowAction,
   rescheduleAction,
   state,
@@ -34,12 +41,15 @@ export function AppointmentsCatalogPage({
   canCreateAppointment?: boolean;
   canCancelAppointment?: boolean;
   canCompleteAppointment?: boolean;
+  canDeductSession?: boolean;
   canMarkNoShowAppointment?: boolean;
   canRescheduleAppointment?: boolean;
   cancelAction?: CancelAppointmentFormAction;
   completeAction?: CompleteAppointmentFormAction;
   createAction?: CreateAppointmentFormAction;
   createOptionsState: CreateAppointmentOptionsState;
+  deductAction?: DeductSessionFormAction;
+  deductOptionsByAppointmentId?: Record<string, DeductSessionOptionsState>;
   markNoShowAction?: MarkNoShowAppointmentFormAction;
   rescheduleAction?: RescheduleAppointmentFormAction;
   state: AppointmentsPageState;
@@ -66,10 +76,13 @@ export function AppointmentsCatalogPage({
         <AppointmentsContent
           canCancelAppointment={canCancelAppointment}
           canCompleteAppointment={canCompleteAppointment}
+          canDeductSession={canDeductSession}
           canMarkNoShowAppointment={canMarkNoShowAppointment}
           canRescheduleAppointment={canRescheduleAppointment}
           cancelAction={cancelAction}
           completeAction={completeAction}
+          deductAction={deductAction}
+          deductOptionsByAppointmentId={deductOptionsByAppointmentId}
           markNoShowAction={markNoShowAction}
           rescheduleAction={rescheduleAction}
           state={state}
@@ -115,20 +128,26 @@ function AppointmentsSummary({ state }: { state: AppointmentsPageState }) {
 function AppointmentsContent({
   canCancelAppointment,
   canCompleteAppointment,
+  canDeductSession,
   canMarkNoShowAppointment,
   canRescheduleAppointment,
   cancelAction,
   completeAction,
+  deductAction,
+  deductOptionsByAppointmentId,
   markNoShowAction,
   rescheduleAction,
   state,
 }: {
   canCancelAppointment?: boolean;
   canCompleteAppointment?: boolean;
+  canDeductSession?: boolean;
   canMarkNoShowAppointment?: boolean;
   canRescheduleAppointment?: boolean;
   cancelAction?: CancelAppointmentFormAction;
   completeAction?: CompleteAppointmentFormAction;
+  deductAction?: DeductSessionFormAction;
+  deductOptionsByAppointmentId?: Record<string, DeductSessionOptionsState>;
   markNoShowAction?: MarkNoShowAppointmentFormAction;
   rescheduleAction?: RescheduleAppointmentFormAction;
   state: AppointmentsPageState;
@@ -138,11 +157,14 @@ function AppointmentsContent({
       <AppointmentsTable
         canCancelAppointment={canCancelAppointment}
         canCompleteAppointment={canCompleteAppointment}
+        canDeductSession={canDeductSession}
         canMarkNoShowAppointment={canMarkNoShowAppointment}
         canRescheduleAppointment={canRescheduleAppointment}
         cancelAction={cancelAction}
         completeAction={completeAction}
         dataMode={state.source}
+        deductAction={deductAction}
+        deductOptionsByAppointmentId={deductOptionsByAppointmentId}
         markNoShowAction={markNoShowAction}
         rescheduleAction={rescheduleAction}
         rows={state.rows}

@@ -5,30 +5,46 @@ import type { CancelAppointmentFormAction } from "./cancel-appointment-types";
 import type { AppointmentTableRow } from "./appointments-page-state";
 import { CompleteAppointmentDialog } from "./complete-appointment-dialog";
 import type { CompleteAppointmentFormAction } from "./complete-appointment-types";
+import { DeductSessionDialog } from "./deduct-session-dialog";
+import type {
+  DeductSessionFormAction,
+  DeductSessionOptionsState,
+} from "./deduct-session-types";
 import { MarkNoShowAppointmentDialog } from "./mark-no-show-appointment-dialog";
 import type { MarkNoShowAppointmentFormAction } from "./mark-no-show-appointment-types";
 import { RescheduleAppointmentDialog } from "./reschedule-appointment-dialog";
 import type { RescheduleAppointmentFormAction } from "./reschedule-appointment-types";
 
+const UNAVAILABLE_DEDUCT_OPTIONS_STATE: DeductSessionOptionsState = {
+  status: "error",
+  dataMode: "mock",
+};
+
 export function AppointmentsTable({
   canCancelAppointment,
   canCompleteAppointment,
+  canDeductSession,
   canMarkNoShowAppointment,
   canRescheduleAppointment,
   cancelAction,
   completeAction,
   dataMode,
+  deductAction,
+  deductOptionsByAppointmentId,
   markNoShowAction,
   rescheduleAction,
   rows,
 }: {
   canCancelAppointment?: boolean;
   canCompleteAppointment?: boolean;
+  canDeductSession?: boolean;
   canMarkNoShowAppointment?: boolean;
   canRescheduleAppointment?: boolean;
   cancelAction?: CancelAppointmentFormAction;
   completeAction?: CompleteAppointmentFormAction;
   dataMode: "mock" | "supabase";
+  deductAction?: DeductSessionFormAction;
+  deductOptionsByAppointmentId?: Record<string, DeductSessionOptionsState>;
   markNoShowAction?: MarkNoShowAppointmentFormAction;
   rescheduleAction?: RescheduleAppointmentFormAction;
   rows: AppointmentTableRow[];
@@ -131,6 +147,18 @@ export function AppointmentsTable({
                         dataMode={dataMode}
                       />
                     </span>
+                  ) : row.status === "completed" ? (
+                    <DeductSessionDialog
+                      action={deductAction}
+                      appointmentId={row.id}
+                      appointmentLabel={`${row.scheduled} - ${row.clientName}`}
+                      canDeductSession={canDeductSession}
+                      dataMode={dataMode}
+                      optionsState={
+                        deductOptionsByAppointmentId?.[row.id] ??
+                        UNAVAILABLE_DEDUCT_OPTIONS_STATE
+                      }
+                    />
                   ) : (
                     <span className="text-foreground-muted">Not available</span>
                   )}

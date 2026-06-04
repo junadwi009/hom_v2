@@ -11,6 +11,7 @@
     "./appointments": "./src/appointments/index.ts",
     "./clients": "./src/clients/index.ts",
     "./packages": "./src/packages/index.ts",
+    "./payments": "./src/payments/index.ts",
     "./practitioners": "./src/practitioners/index.ts",
     "./rbac": "./src/rbac/index.ts",
     "./audit": "./src/audit/index.ts",

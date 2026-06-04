@@ -46,8 +46,8 @@ export const mockAppointments = [
   },
   {
     id: "40000000-0000-4000-8000-000000000003",
-    clientId: "10000000-0000-4000-8000-000000000003",
-    clientName: "Mock Client Gamma",
+    clientId: "10000000-0000-4000-8000-000000000001",
+    clientName: "Mock Client Alpha",
     practitionerId: "20000000-0000-4000-8000-000000000001",
     practitionerName: "Mock Practitioner One",
     serviceId: "30000000-0000-4000-8000-000000000002",

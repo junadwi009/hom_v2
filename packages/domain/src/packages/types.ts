@@ -15,6 +15,7 @@ import type {
   packageUsageHistoryListResultSchema,
   packageUsageHistorySchema,
   assignClientPackageInputSchema,
+  deductClientPackageSessionInputSchema,
 } from "./schemas";
 
 export type PackageStatus = z.infer<typeof packageStatusSchema>;
@@ -44,4 +45,7 @@ export type PackageUsageHistoryListResult = z.infer<
 >;
 export type AssignClientPackageInput = z.infer<
   typeof assignClientPackageInputSchema
+>;
+export type DeductClientPackageSessionInput = z.infer<
+  typeof deductClientPackageSessionInputSchema
 >;
