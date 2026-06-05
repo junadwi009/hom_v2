@@ -24,6 +24,7 @@ export const operationalNavigation = [
   { label: "Service & Paket", href: "/catalog", icon: Package },
   { label: "Client Packages", href: "/client-packages", icon: BadgeCheck },
   { label: "Payments", href: "/payments", icon: Wallet },
+  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 // Modules whose backend is not built yet — shown muted under a "Coming soon" group.
@@ -34,7 +35,6 @@ export const comingSoonNavigation = [
   { label: "Financials", href: "/financials", icon: CircleDollarSign },
   { label: "AI Business Agent", href: "/ai-business-agent", icon: Bot },
   { label: "Approvals", href: "/approvals", icon: CheckCheck },
-  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 export const primaryNavigation = [
