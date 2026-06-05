@@ -16,7 +16,8 @@
     "./rbac": "./src/rbac/index.ts",
     "./audit": "./src/audit/index.ts",
     "./services": "./src/services/index.ts",
-    "./shared": "./src/shared/index.ts"
+    "./shared": "./src/shared/index.ts",
+    "./users": "./src/users/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

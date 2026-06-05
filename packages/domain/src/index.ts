@@ -10,3 +10,4 @@ export * from "./practitioners";
 export * from "./rbac";
 export * from "./services";
 export * from "./shared";
+export * from "./users";
