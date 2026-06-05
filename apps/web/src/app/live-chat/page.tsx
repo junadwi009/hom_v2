@@ -1,6 +1,5 @@
-import { ModuleMockPage } from "@/features/module-page/module-mock-page";
-import { modulePages } from "@/lib/mock-data";
+import { LiveChatMock } from "@/features/live-chat/live-chat-mock";
 
 export default function LiveChatPage() {
-  return <ModuleMockPage {...modulePages.liveChat} />;
+  return <LiveChatMock />;
 }

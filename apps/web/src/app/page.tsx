@@ -1,5 +1,7 @@
-import { ExecutiveCommandOverview } from "@/features/executive-command/executive-command-overview";
+import { ExecutiveOverviewPage } from "@/features/executive-command/executive-overview-page";
+
+export const dynamic = "force-dynamic";
 
 export default function Home() {
-  return <ExecutiveCommandOverview />;
+  return <ExecutiveOverviewPage />;
 }

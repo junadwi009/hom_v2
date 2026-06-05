@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" role="img" aria-label="HOM Clinical Pilates — The Journey Back to Health">
+  <defs>
+    <path id="hom-arc" d="M 110 330 A 250 250 0 0 1 610 330" fill="none" />
+  </defs>
+  <g fill="#e7e3da">
+    <text font-family="Georgia, 'Times New Roman', serif" font-size="37" letter-spacing="9">
+      <textPath href="#hom-arc" startOffset="50%" text-anchor="middle">CLINICAL PILATES</textPath>
+    </text>
+    <text x="360" y="362" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="165" letter-spacing="3">H&#332;M</text>
+    <text x="360" y="432" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="600" font-size="27" letter-spacing="7">THE JOURNEY BACK TO HEALTH</text>
+  </g>
+</svg>

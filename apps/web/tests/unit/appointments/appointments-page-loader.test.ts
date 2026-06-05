@@ -123,6 +123,7 @@ describe("toAppointmentTableRow", () => {
       id: mockAppointment.id,
       clientId: mockAppointment.clientId,
       scheduled: "1 Jun 2026, 10:00",
+      startsAt: mockAppointment.startsAt,
       clientName: "Mock Client Alpha",
       practitionerName: "Mock Practitioner One",
       serviceName: "Mock Intro Assessment",

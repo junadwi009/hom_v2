@@ -6,6 +6,7 @@ export type AppointmentTableRow = {
   id: string;
   clientId: string;
   scheduled: string;
+  startsAt: string;
   clientName: string;
   practitionerName: string;
   serviceName: string;
@@ -47,6 +48,7 @@ export function toAppointmentTableRow(
     id: appointment.id,
     clientId: appointment.clientId,
     scheduled: toScheduleLabel(appointment.startsAt),
+    startsAt: appointment.startsAt,
     clientName: appointment.clientName,
     practitionerName: appointment.practitionerName,
     serviceName: appointment.serviceName,

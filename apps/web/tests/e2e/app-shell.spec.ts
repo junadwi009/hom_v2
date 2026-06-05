@@ -20,7 +20,7 @@ test.describe("HOM Studio OS shell", () => {
     test(`renders ${route.path}`, async ({ page }) => {
       await page.goto(route.path);
 
-      await expect(page.getByText("HOM Studio")).toBeVisible();
+      await expect(page.getByText("Dashboard v0.2")).toBeVisible();
       await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
       await expect(page.getByRole("heading", { name: route.title, exact: true })).toBeVisible();
       await expect(page.getByText("Search clients, appointments, approvals")).toBeVisible();

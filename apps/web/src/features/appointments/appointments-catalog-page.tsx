@@ -93,33 +93,36 @@ export function AppointmentsCatalogPage({
 }
 
 function AppointmentsSummary({ state }: { state: AppointmentsPageState }) {
-  const loadedValue =
-    state.status === "ready" ? String(state.total) : "Unavailable";
-  const visibleValue =
-    state.status === "ready" ? String(state.rows.length) : "Unavailable";
+  const ready = state.status === "ready";
+  const rows = ready ? state.rows : [];
+  const totalJadwal = ready ? state.total : 0;
+  const totalSukses = rows.filter((row) => row.status === "completed").length;
+  const totalCancelNoShow = rows.filter(
+    (row) => row.status === "cancelled" || row.status === "no_show",
+  ).length;
 
   return (
     <section className="grid gap-4 md:grid-cols-3">
       <MetricCard
-        label="Loaded appointments"
-        value={loadedValue}
-        helper="repository result"
-        trend={state.status === "ready" ? "read-only" : "not loaded"}
-        tone={state.status === "ready" ? "success" : "warning"}
+        label="Total Jadwal"
+        value={ready ? String(totalJadwal) : "—"}
+        helper="Seluruh janji temu"
+        trend={ready ? "terjadwal" : "—"}
+        tone={ready ? "info" : "neutral"}
       />
       <MetricCard
-        label="Visible rows"
-        value={visibleValue}
-        helper="current page"
-        trend={state.status === "ready" ? "page 1" : "paused"}
-        tone={state.status === "ready" ? "info" : "warning"}
+        label="Total Sukses"
+        value={ready ? String(totalSukses) : "—"}
+        helper="Sesi selesai"
+        trend={ready ? "selesai" : "—"}
+        tone={ready ? "success" : "neutral"}
       />
       <MetricCard
-        label="Schedule source"
-        value={state.source}
-        helper="local workspace"
-        trend="safe"
-        tone="neutral"
+        label="Total Cancel / No-show"
+        value={ready ? String(totalCancelNoShow) : "—"}
+        helper="Dibatalkan atau tidak hadir"
+        trend={ready && totalCancelNoShow > 0 ? "perlu perhatian" : "aman"}
+        tone={ready ? (totalCancelNoShow > 0 ? "warning" : "success") : "neutral"}
       />
     </section>
   );

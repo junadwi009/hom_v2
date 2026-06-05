@@ -1,8 +1,16 @@
 import { StatusBadge } from "@/components/hom/status-badge";
 
+import { ClientDetailSheet } from "./client-detail-sheet";
+import type { ClientDetailAction } from "./client-detail-types";
 import type { ClientTableRow } from "./clients-page-state";
 
-export function ClientsTable({ rows }: { rows: ClientTableRow[] }) {
+export function ClientsTable({
+  rows,
+  detailAction,
+}: {
+  rows: ClientTableRow[];
+  detailAction?: ClientDetailAction;
+}) {
   return (
     <div className="overflow-hidden rounded-lg border bg-background-card">
       <div className="overflow-x-auto">
@@ -24,6 +32,12 @@ export function ClientsTable({ rows }: { rows: ClientTableRow[] }) {
               >
                 Updated
               </th>
+              <th
+                className="border-b px-4 py-3 text-right font-semibold"
+                scope="col"
+              >
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -43,6 +57,16 @@ export function ClientsTable({ rows }: { rows: ClientTableRow[] }) {
                 </td>
                 <td className="px-4 py-3 text-right text-foreground-muted">
                   {row.updated}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <ClientDetailSheet
+                    action={detailAction}
+                    client={{
+                      id: row.id,
+                      name: row.name,
+                      status: row.status,
+                    }}
+                  />
                 </td>
               </tr>
             ))}

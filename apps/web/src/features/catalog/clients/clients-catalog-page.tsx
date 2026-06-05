@@ -6,9 +6,16 @@ import { MetricCard } from "@/components/hom/metric-card";
 import { PageHeader } from "@/components/layout/page-header";
 
 import { ClientsTable } from "./clients-table";
+import type { ClientDetailAction } from "./client-detail-types";
 import type { ClientsPageState } from "./clients-page-state";
 
-export function ClientsCatalogPage({ state }: { state: ClientsPageState }) {
+export function ClientsCatalogPage({
+  state,
+  detailAction,
+}: {
+  state: ClientsPageState;
+  detailAction?: ClientDetailAction;
+}) {
   return (
     <>
       <PageHeader
@@ -19,9 +26,9 @@ export function ClientsCatalogPage({ state }: { state: ClientsPageState }) {
       <ClientsSummary state={state} />
       <DashboardCard
         title="Client catalog"
-        description="Client status and primary practitioner assignment."
+        description="Client status, practitioner utama, dan detail profil per klien."
       >
-        <ClientsContent state={state} />
+        <ClientsContent detailAction={detailAction} state={state} />
       </DashboardCard>
     </>
   );
@@ -59,9 +66,15 @@ function ClientsSummary({ state }: { state: ClientsPageState }) {
   );
 }
 
-function ClientsContent({ state }: { state: ClientsPageState }) {
+function ClientsContent({
+  state,
+  detailAction,
+}: {
+  state: ClientsPageState;
+  detailAction?: ClientDetailAction;
+}) {
   if (state.status === "ready") {
-    return <ClientsTable rows={state.rows} />;
+    return <ClientsTable detailAction={detailAction} rows={state.rows} />;
   }
 
   if (state.status === "empty") {

@@ -6,7 +6,6 @@ import {
   CalendarDays,
   CheckCheck,
   CircleDollarSign,
-  ClipboardList,
   FolderOpen,
   MessageSquareText,
   Package,
@@ -16,15 +15,19 @@ import {
   Wallet,
 } from "lucide-react";
 
-export const primaryNavigation = [
+// Modules backed by real Supabase data and working flows.
+export const operationalNavigation = [
   { label: "Overview", href: "/", icon: Activity },
   { label: "Appointments", href: "/appointments", icon: CalendarDays },
   { label: "Clients", href: "/clients", icon: Users },
   { label: "Practitioners", href: "/practitioners", icon: Stethoscope },
-  { label: "Services", href: "/services", icon: ClipboardList },
-  { label: "Packages", href: "/packages", icon: Package },
+  { label: "Service & Paket", href: "/catalog", icon: Package },
   { label: "Client Packages", href: "/client-packages", icon: BadgeCheck },
   { label: "Payments", href: "/payments", icon: Wallet },
+];
+
+// Modules whose backend is not built yet — shown muted under a "Coming soon" group.
+export const comingSoonNavigation = [
   { label: "Live Chat", href: "/live-chat", icon: MessageSquareText },
   { label: "Knowledge Studio", href: "/knowledge-studio", icon: FolderOpen },
   { label: "Behavior Intelligence", href: "/behavior-intelligence", icon: BarChart3 },
@@ -32,6 +35,11 @@ export const primaryNavigation = [
   { label: "AI Business Agent", href: "/ai-business-agent", icon: Bot },
   { label: "Approvals", href: "/approvals", icon: CheckCheck },
   { label: "Settings", href: "/settings", icon: Settings },
+];
+
+export const primaryNavigation = [
+  ...operationalNavigation,
+  ...comingSoonNavigation,
 ];
 
 export const executiveTabs = [

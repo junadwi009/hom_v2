@@ -1,12 +1,7 @@
-import { FilterBar } from "@/components/layout/filter-bar";
-import { PageHeader } from "@/components/layout/page-header";
 import { DashboardCard } from "@/components/hom/dashboard-card";
-import { DataTable } from "@/components/hom/data-table";
-import { MetricCard, type MetricCardProps } from "@/components/hom/metric-card";
-import { ErrorState } from "@/components/feedback/error-state";
-import { LoadingSkeleton } from "@/components/feedback/loading-skeleton";
-import { PermissionDeniedState } from "@/components/feedback/permission-denied-state";
-import { Button } from "@/components/ui/button";
+import type { MetricCardProps } from "@/components/hom/metric-card";
+import { PageHeader } from "@/components/layout/page-header";
+import { Badge } from "@/components/ui/badge";
 
 export type ModuleMockPageProps = {
   eyebrow: string;
@@ -17,41 +12,30 @@ export type ModuleMockPageProps = {
   rows: Array<Record<string, string>>;
 };
 
-export function ModuleMockPage({
-  eyebrow,
-  title,
-  description,
-  metrics,
-  columns,
-  rows,
-}: ModuleMockPageProps) {
+// Placeholder for modules whose backend is not built yet. Renders a clean
+// "coming soon" state (no mock tables, no error/skeleton artifacts) so the app
+// never looks broken to an owner or staff member.
+export function ModuleMockPage({ eyebrow, title }: ModuleMockPageProps) {
   return (
     <>
       <PageHeader
         eyebrow={eyebrow}
         title={title}
-        description={description}
-        actions={
-          <>
-            <Button type="button" variant="secondary">Export mock</Button>
-            <Button type="button">Create draft</Button>
-          </>
-        }
+        description="Modul ini sedang dalam pengembangan dan akan hadir pada rilis berikutnya."
+        actions={<Badge tone="info">Segera hadir</Badge>}
       />
-      <section className="grid gap-4 md:grid-cols-3">
-        {metrics.map((metric) => (
-          <MetricCard key={metric.label} {...metric} />
-        ))}
-      </section>
-      <FilterBar />
-      <DashboardCard title={`${title} worklist`} description="Mock data only. Backend validation and persistence are deferred.">
-        <DataTable columns={columns} rows={rows} />
+      <DashboardCard
+        title={`${title} — segera hadir`}
+        description="Fitur ini belum aktif. Fokus saat ini pada modul operasional yang sudah berjalan: Appointments, Clients, Packages, dan Payments."
+      >
+        <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+          <p className="text-sm font-semibold text-foreground">Belum tersedia</p>
+          <p className="max-w-md text-sm leading-6 text-foreground-muted">
+            Tim sedang menyiapkan modul {title}. Hubungi admin bila Anda
+            membutuhkan kapabilitas ini lebih awal.
+          </p>
+        </div>
       </DashboardCard>
-      <section className="grid gap-4 lg:grid-cols-3">
-        <LoadingSkeleton />
-        <ErrorState title="Mock load failure" description="Real retries will be wired after APIs exist." />
-        <PermissionDeniedState />
-      </section>
     </>
   );
 }

@@ -1,82 +1,185 @@
 import { DashboardCard } from "@/components/hom/dashboard-card";
-import { DataTable } from "@/components/hom/data-table";
-import { MetricCard } from "@/components/hom/metric-card";
-import { StatusBadge } from "@/components/hom/status-badge";
+import { MetricCard, type MetricCardProps } from "@/components/hom/metric-card";
 import { PageHeader } from "@/components/layout/page-header";
-import { Button } from "@/components/ui/button";
-import { attentionItems, executiveMetrics, practitionerRows } from "@/lib/mock-data";
+import { formatIdr, formatIdrCompact, formatNumber } from "@/lib/format";
 
-export function ExecutiveCommandOverview() {
+import type { OverviewKpis, OverviewState } from "./overview-loader";
+import { RevenueClientsChart } from "./revenue-clients-chart";
+
+const EMPTY_METRICS: MetricCardProps[] = [
+  { label: "Pendapatan bulan ini", value: "—", helper: "Menunggu data studio", trend: "—", tone: "neutral" },
+  { label: "Klien baru bulan ini", value: "—", helper: "Menunggu data studio", trend: "—", tone: "neutral" },
+  { label: "Pembayaran tertunda", value: "—", helper: "Menunggu data studio", trend: "—", tone: "neutral" },
+  { label: "Janji temu mendatang", value: "—", helper: "Menunggu data studio", trend: "—", tone: "neutral" },
+];
+
+export function ExecutiveCommandOverview({ state }: { state: OverviewState }) {
+  const ready = state.status === "ready";
+  const metricCards = ready ? buildMetricCards(state.kpis) : EMPTY_METRICS;
+
   return (
     <>
       <PageHeader
         eyebrow="Executive Command"
         title="Strategic Overview"
-        description="Operational foundation first: attention items, safe mock metrics, and review queues before production dashboards."
-        actions={
-          <>
-            <Button type="button" variant="secondary">Mock period: May 2026</Button>
-            <Button type="button">Open approvals</Button>
-          </>
-        }
+        description="Cockpit owner: tren pendapatan vs klien baru, KPI utama, dan hal yang perlu perhatian."
       />
-      <section className="grid gap-4 lg:grid-cols-4">
-        {attentionItems.map((item) => (
-          <DashboardCard key={item.title} title={item.title} description={item.detail}>
-            <div className="flex items-center justify-between gap-3">
-              <p className="shrink-0 whitespace-nowrap text-2xl font-semibold tracking-normal text-foreground">{item.value}</p>
-              <StatusBadge status={item.status === "danger" ? "blocked" : "pending"} />
-            </div>
-          </DashboardCard>
-        ))}
-      </section>
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {executiveMetrics.map((metric) => (
+        {metricCards.map((metric) => (
           <MetricCard key={metric.label} {...metric} />
         ))}
       </section>
-      <section className="grid gap-4 xl:grid-cols-[1.4fr_0.9fr]">
-        <DashboardCard title="Revenue growth" description="Static mock chart placeholder with period/source labeling.">
-          <div className="flex h-64 items-end gap-3 rounded-lg border bg-stone-50 p-4">
-            {[42, 56, 48, 68, 74, 88].map((height, index) => (
-              <div className="flex flex-1 flex-col items-center gap-2" key={height}>
-                <div
-                  className="w-full rounded-md bg-[var(--accent-gold)]"
-                  style={{ height: `${height}%` }}
-                />
-                <span className="text-xs text-foreground-muted">M{index + 1}</span>
-              </div>
-            ))}
-          </div>
+      <DashboardCard
+        title="Pendapatan vs Klien Baru per Bulan"
+        description="Tren pendapatan (pembayaran lunas) dibanding jumlah klien baru, 6 bulan terakhir."
+      >
+        {ready ? (
+          <RevenueClientsChart series={state.series} />
+        ) : (
+          <StatePlaceholder state={state} />
+        )}
+      </DashboardCard>
+      <section className="grid gap-4 lg:grid-cols-2">
+        <DashboardCard
+          title="Perlu perhatian"
+          description="Hal operasional yang menahan pendapatan atau retensi klien."
+        >
+          {ready ? (
+            <AttentionList attention={state.attention} />
+          ) : (
+            <StatePlaceholder state={state} />
+          )}
         </DashboardCard>
-        <DashboardCard title="AI intelligence" description="AI is represented as draft-only in Phase 1.">
-          <div className="space-y-3 text-sm">
-            <div className="rounded-lg border bg-stone-50 p-3">
-              <p className="font-medium text-foreground">Read-only summary shell</p>
-              <p className="mt-1 leading-6 text-foreground-muted">
-                Real AI Gateway, sources, model logs, and policy guard are deferred.
-              </p>
-            </div>
-            <div className="rounded-lg border bg-stone-50 p-3">
-              <p className="font-medium text-foreground">Sensitive action boundary</p>
-              <p className="mt-1 leading-6 text-foreground-muted">
-                Finance, appointments, notes, refunds, payroll, and blasts require human approval later.
-              </p>
-            </div>
-          </div>
+        <DashboardCard
+          title="Ringkasan periode"
+          description="Cuplikan angka utama bulan berjalan."
+        >
+          {ready ? (
+            <PeriodSummary kpis={state.kpis} />
+          ) : (
+            <StatePlaceholder state={state} />
+          )}
         </DashboardCard>
       </section>
-      <DashboardCard title="Practitioner metrics" description="Mock utilization table for layout validation only.">
-        <DataTable
-          columns={["Practitioner", "Utilization", "Sessions", "Status"]}
-          rows={practitionerRows.map((row) => ({
-            Practitioner: row.practitioner,
-            Utilization: row.utilization,
-            Sessions: row.sessions,
-            Status: row.status,
-          }))}
-        />
-      </DashboardCard>
     </>
+  );
+}
+
+function buildMetricCards(kpis: OverviewKpis): MetricCardProps[] {
+  const hasPending = kpis.pendingPaymentsCount > 0;
+  return [
+    {
+      label: "Pendapatan bulan ini",
+      value: formatIdr(kpis.revenueThisMonthIdr),
+      helper: "Pembayaran lunas bulan berjalan",
+      trend: "bulan ini",
+      tone: "success",
+    },
+    {
+      label: "Klien baru bulan ini",
+      value: formatNumber(kpis.newClientsThisMonth),
+      helper: "Registrasi klien baru",
+      trend: "bulan ini",
+      tone: "info",
+    },
+    {
+      label: "Pembayaran tertunda",
+      value: formatNumber(kpis.pendingPaymentsCount),
+      helper: `Total ${formatIdrCompact(kpis.pendingPaymentsTotalIdr)} belum tertagih`,
+      trend: hasPending ? "perlu tindak lanjut" : "aman",
+      tone: hasPending ? "warning" : "success",
+    },
+    {
+      label: "Janji temu mendatang",
+      value: formatNumber(kpis.upcomingAppointments),
+      helper: "Sesi yang akan datang",
+      trend: "terjadwal",
+      tone: "info",
+    },
+  ];
+}
+
+function AttentionList({
+  attention,
+}: {
+  attention: { lowSessionPackages: number; pendingPayments: number; noShowAppointments: number };
+}) {
+  const items = [
+    {
+      label: "Paket klien hampir habis",
+      detail: "Sisa sesi ≤ 2 — peluang penawaran paket baru.",
+      count: attention.lowSessionPackages,
+    },
+    {
+      label: "Pembayaran tertunda",
+      detail: "Belum tertagih — perlu tindak lanjut ke klien.",
+      count: attention.pendingPayments,
+    },
+    {
+      label: "Janji temu no-show",
+      detail: "Klien tidak hadir — pengaruhi okupansi & pendapatan.",
+      count: attention.noShowAppointments,
+    },
+  ];
+
+  return (
+    <ul className="space-y-3">
+      {items.map((item) => (
+        <li
+          key={item.label}
+          className="flex items-center justify-between gap-3 rounded-lg border bg-stone-50 px-4 py-3"
+        >
+          <div>
+            <p className="text-sm font-medium text-foreground">{item.label}</p>
+            <p className="mt-1 text-xs leading-5 text-foreground-muted">{item.detail}</p>
+          </div>
+          <span
+            className={
+              item.count > 0
+                ? "shrink-0 rounded-md bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-900"
+                : "shrink-0 rounded-md bg-green-100 px-3 py-1 text-sm font-semibold text-green-800"
+            }
+          >
+            {formatNumber(item.count)}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function PeriodSummary({ kpis }: { kpis: OverviewKpis }) {
+  const rows = [
+    { label: "Pendapatan bulan ini", value: formatIdr(kpis.revenueThisMonthIdr) },
+    { label: "Klien baru bulan ini", value: formatNumber(kpis.newClientsThisMonth) },
+    {
+      label: "Pembayaran tertunda",
+      value: `${formatNumber(kpis.pendingPaymentsCount)} · ${formatIdrCompact(kpis.pendingPaymentsTotalIdr)}`,
+    },
+    { label: "Janji temu mendatang", value: formatNumber(kpis.upcomingAppointments) },
+  ];
+
+  return (
+    <dl className="divide-y">
+      {rows.map((row) => (
+        <div key={row.label} className="flex items-center justify-between gap-3 py-3 text-sm">
+          <dt className="text-foreground-muted">{row.label}</dt>
+          <dd className="font-semibold text-foreground">{row.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function StatePlaceholder({ state }: { state: OverviewState }) {
+  const message =
+    state.status === "unavailable"
+      ? "Data sementara tidak tersedia. Coba lagi nanti."
+      : "Data akan tampil setelah terhubung ke data studio.";
+
+  return (
+    <div className="flex h-40 items-center justify-center rounded-lg border bg-stone-50 text-sm text-foreground-muted">
+      {message}
+    </div>
   );
 }
