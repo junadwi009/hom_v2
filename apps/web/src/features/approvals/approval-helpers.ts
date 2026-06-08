@@ -147,21 +147,36 @@ export function canViewSensitive(
 }
 
 // Broad gate: can the user open the Approval Center at all?
-const VIEWER_PERMISSIONS = [
+//
+// SINGLE SOURCE OF TRUTH for Approval Center read access. The SQL gate
+// `private.can_access_approvals()` (migration 20260608000300) MUST mirror this
+// exact set (plus owner roles). If you change one, change the other.
+export const APPROVAL_CENTER_ACCESS_PERMISSIONS = [
   "can_manage_users",
   "can_manage_roles_permissions",
-  "can_edit_financials",
+  "can_view_audit_logs",
+  "can_approve_whatsapp_blast",
+  "can_request_note_unlock",
+  "can_approve_note_unlock",
+  "can_approve_reimbursements",
+  "can_publish_knowledge",
+  "can_export_financial_report",
   "can_view_financials",
+  "can_edit_financials",
+  "can_view_clinical_cases",
+  "can_manage_clinical_cases",
   "can_manage_clients",
   "can_manage_appointments",
   "can_manage_practitioners",
-  "can_approve_reimbursements",
-  "can_approve_whatsapp_blast",
-  "can_approve_note_unlock",
-  "can_publish_knowledge",
-];
+] as const;
+
 export function canAccessApprovalCenter(user: CurrentApprovalUser): boolean {
-  return isOwner(user) || user.permissions.some((p) => VIEWER_PERMISSIONS.includes(p));
+  return (
+    isOwner(user) ||
+    user.permissions.some((p) =>
+      (APPROVAL_CENTER_ACCESS_PERMISSIONS as readonly string[]).includes(p),
+    )
+  );
 }
 
 // ---- KPIs ------------------------------------------------------------------

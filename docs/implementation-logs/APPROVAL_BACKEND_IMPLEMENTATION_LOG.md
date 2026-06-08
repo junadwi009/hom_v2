@@ -162,3 +162,156 @@ financial entry was preserved).
 Approval **side-effects & second-approval** — on approve, trigger the mapped domain action
 (e.g. payment refund, note unlock) through that module's existing audited RPC, and implement the
 two-approver flow for `requires_second_approval` requests.
+
+---
+
+# Security Hardening Pass — Sensitive Redaction + Access Alignment
+
+## 1. Task title
+Approval Backend security hardening: data-layer redaction of sensitive clinical fields (C1),
+SQL↔TS access-gate alignment (M3), and demo-seed production safety (M4).
+
+## 2. Implementation date
+2026-06-08.
+
+## 3. Branch name
+`phase-approval-backend`.
+
+## 4. Base commit
+`ca89897` ("Build approval backend workflow").
+
+## 5. Scope completed
+- **C1** — sensitive clinical fields are now redacted **at the data layer** (the SQL view), so
+  unauthorized approvers never receive them in the RPC/RSC/network payload (UI hiding is no longer
+  the only barrier).
+- **M3** — `private.can_access_approvals()` now mirrors the TypeScript `canAccessApprovalCenter`
+  set exactly (documented single source of truth).
+- **M4** — the `[DEMO]` seed migration now **no-ops outside local/dev**.
+- No real approval side effects added; mutation RPCs unchanged.
+
+## 6. Files created
+- `supabase/migrations/20260608000300_approval_security_hardening.sql`.
+
+## 7. Files modified
+- `supabase/migrations/20260608000200_approval_demo_seed.sql` — wrapped in a local/dev guard
+  (committed-but-unpushed migration, adjusted on-branch as permitted; see §13).
+- `apps/web/src/features/approvals/approval-helpers.ts` — `canAccessApprovalCenter` now uses the
+  exported `APPROVAL_CENTER_ACCESS_PERMISSIONS` canonical set (M3).
+
+## 8. Migrations changed/added
+- Added `20260608000300_approval_security_hardening.sql` (redaction helper + aligned gate +
+  `create or replace view`). Applied locally via `migration up` (no reset).
+- Edited `20260608000200_approval_demo_seed.sql` to add the local/dev guard (already applied
+  locally → not re-run; only affects fresh applies on other environments).
+
+## 9. RPCs changed
+- No RPC signatures changed. `list_approval_requests` / `approve|reject|...` continue to
+  `returns setof private.approval_request_rows`; the view they read is now redaction-aware, so all
+  request-returning RPCs inherit redaction automatically.
+
+## 10. RLS/helper changes
+- New `private.can_view_sensitive_approval_details()` (owner role OR `can_view_clinical_cases` OR
+  `can_approve_note_unlock`).
+- `private.can_access_approvals()` replaced with the aligned canonical set (adds
+  `can_view_audit_logs`, `can_request_note_unlock`, `can_export_financial_report`,
+  `can_view_clinical_cases`, `can_manage_clinical_cases`, `can_manage_clients`,
+  `can_manage_appointments`, `can_manage_practitioners`).
+- `private.approval_request_rows` view rebuilt with per-row redaction CASE expressions (column
+  names/types/order unchanged, so `create or replace view` + dependent RPCs stay valid).
+
+## 11. Sensitive data redaction behavior
+- A row is treated sensitive when `sensitive = true` **OR** `domain = 'clinical'`.
+- For such rows, callers **without** clinical access receive:
+  - `reason` → `Detail klinis disembunyikan. Membutuhkan akses Clinical Lead/Owner.`
+  - `risk_check` → `Risk check disembunyikan karena data klinis sensitif.`
+  - `related_record_label` → `Clinical record hidden`
+  - `client_name` → `null`
+  - `evidence` → `[]`
+  - event `note` fields → `null` (history structure preserved)
+- Non-redacted always: id, request_number, title, domain, status, risk, requester/approver,
+  branch, created/waiting time, `sensitive` flag (so the UI still shows its warning).
+- Demo/seeded titles are intentionally generic (`[DEMO] …`), so titles are not redacted.
+
+## 12. SQL vs TS access gate alignment
+- Canonical set defined once in TS as `APPROVAL_CENTER_ACCESS_PERMISSIONS`
+  (`approval-helpers.ts`), mirrored verbatim in `private.can_access_approvals()` with a comment
+  cross-referencing it. Both include owner roles (`super_admin`, `studio_director`).
+- **Access ≠ approve:** opening the center does not grant approval; approval still uses the
+  per-request `private.can_approve_request(type, domain)` mapping (unchanged).
+
+## 13. Demo seed decision (M4)
+- Chose **Option B (guard)**: the entire seed body runs only when the local studio director
+  (`local.studio.director@example.invalid`) exists — i.e. the local Docker/dev DB. On
+  staging/production (no `.invalid` seed user) the migration **inserts nothing** and `raise notice`
+  logs the skip. Idempotency guards retained.
+- The migration `20260608000200` was committed in `ca89897` but **not pushed**, so it was edited
+  in place on this branch (permitted). It was already applied locally, so editing it does **not**
+  re-run locally (verified: still exactly 4 demo requests, no duplication). To seed demo approvals
+  on a non-local environment, do it deliberately via `create_approval_request` (not this migration).
+
+## 14. REAL Supabase/RPC-backed parts
+- Unchanged and still real: list/rules load, approve/reject/more-info/escalate persistence,
+  `approval_events` history, `audit_logs` writes. Redaction is enforced server-side in SQL.
+
+## 15. MOCK/demo/local-state parts remaining
+- `approvals-data.ts` seed kept as non-Supabase-mode fallback.
+- Create-request / Export header buttons remain toast stubs.
+- `requires_second_approval` stored but not enforced; no real domain side effects executed.
+- `[DEMO]` data is local-only (now guarded).
+
+## 16. Permission gates used
+- Read/list: `private.can_access_approvals()` (aligned set).
+- Sensitive detail: `private.can_view_sensitive_approval_details()`.
+- Approve/etc: `private.can_approve_request(type, domain)` (unchanged).
+
+## 17. Audit log behavior
+- Unchanged: create + each transition still writes `audit_logs`. Verified `approval_request.approved`
+  and `approval_request.rejected` rows after this pass.
+
+## 18. Validation commands run
+- `supabase migration up --local` (applied `…000300`; `…000200` already applied → skipped).
+- `corepack pnpm --dir apps/web typecheck | lint | build`.
+- psql impersonation tests inside the local DB container (owner vs finance_admin).
+
+## 19. Test results
+- migration up: **PASS** (no reset; demo financial entry preserved).
+- typecheck **PASS**; lint **PASS** (0/0); build **PASS** (exit 0).
+- **Redaction (C1) PASS** — psql impersonation:
+  - Owner (studio_director): clinical row returns the **full** reason.
+  - `finance_admin` (has `can_view_financials`, no clinical access): clinical row reason/risk_check/
+    related_record_label redacted, `client_name` null, `evidence` empty — **financial/admin/marketing
+    rows stay intact** (no over-redaction).
+- **M3 PASS** — `finance_admin` now passes `can_access_approvals()` (consistent with TS gate).
+- Persistence regression **PASS** — rejected the clinical request in-browser; after reload status =
+  "Ditolak"; `audit_logs` recorded `approval_request.rejected`.
+
+## 20. Manual QA checklist (active browser, localhost:3000)
+1. `/approvals` loads real `[DEMO]` requests; owner sees full clinical detail + sensitive warning. ✅
+2. Reject (critical → note required) persists; after reload status = "Ditolak". ✅
+3. `audit_logs` shows `approval_request.rejected`. ✅
+4. Demo financial entry `Penjualan Membership` / Rp 8.500.000 still present. ✅
+5. `/payments` KPIs + table render; `/financials` renders; no regression. ✅
+6. Non-clinical redaction confirmed at data layer via psql (no seeded non-clinical browser login). ✅
+
+## 21. Issues found
+- Owner/clinical users must NOT be redacted (avoid over-redaction); non-sensitive rows must stay full.
+- Editing an already-applied migration could risk local history mismatch.
+
+## 22. Issues fixed
+- Redaction predicate scoped to `(sensitive OR domain='clinical') AND NOT can_view_sensitive…`,
+  verified owners and non-sensitive rows are unaffected.
+- `migration up` confirmed it does not re-run the edited `…000200` (no duplication, history intact).
+
+## 23. Remaining TODOs (unchanged + carried)
+- Stricter per-type create gating (M2); enforce `requires_second_approval` (SoD) before side effects.
+- Map escalate role → concrete approver id; create-request UI + real export.
+- Optionally fold the demo seed into `supabase/seed.sql` for reset flows.
+- Consider auditing sensitive reads.
+
+## 24. Production-readiness verdict
+- **Approval actions are persisted** (real RPC + audit). **Real approval side effects are NOT
+  implemented** (status-only).
+- **Demo seed is local/dev-only** (guarded; no production pollution).
+- With C1 (data-layer redaction) and M3 (gate alignment) fixed, the branch is **safe to push for
+  staging**. **Not production-ready** until segregation-of-duties (`requires_second_approval`) and
+  stricter create gating are added — required before approvals execute real side effects.
