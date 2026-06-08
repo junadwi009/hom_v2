@@ -216,6 +216,40 @@ export function getPriorityRequests(
     .map((x) => x.r);
 }
 
+// Pick the single request that should be focused first when the center opens.
+// Priority order (as specified): critical risk > overdue (>24h) > highest
+// financial impact > pending. Only actionable requests are considered; returns
+// null when there is nothing to act on (so the empty state is preserved).
+export function compareApprovalPriority(
+  a: ApprovalRequest,
+  b: ApprovalRequest,
+): number {
+  const critical =
+    Number(b.risk === "critical") - Number(a.risk === "critical");
+  if (critical !== 0) return critical;
+
+  const overdue = Number(b.waitingHours > 24) - Number(a.waitingHours > 24);
+  if (overdue !== 0) return overdue;
+
+  const impact = (b.amountIdr ?? 0) - (a.amountIdr ?? 0);
+  if (impact !== 0) return impact;
+
+  const pending = Number(b.status === "pending") - Number(a.status === "pending");
+  if (pending !== 0) return pending;
+
+  // Stable tie-break: longest-waiting first, then id for determinism.
+  if (b.waitingHours !== a.waitingHours) return b.waitingHours - a.waitingHours;
+  return a.id.localeCompare(b.id);
+}
+
+export function getHighestPriorityRequest(
+  requests: ApprovalRequest[],
+): ApprovalRequest | null {
+  const active = requests.filter((r) => isActiveStatus(r.status));
+  if (active.length === 0) return null;
+  return [...active].sort(compareApprovalPriority)[0];
+}
+
 export function generateApprovalInsight(requests: ApprovalRequest[]): {
   text: string;
   top: ApprovalRequest[];

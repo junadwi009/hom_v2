@@ -43,6 +43,13 @@ const readyState = {
       updated: "2026-06-02",
     },
   ],
+  summary: {
+    totalCount: 3,
+    visibleCount: 3,
+    paidAmountIdr: 3_750_000,
+    pendingAmountIdr: 1_800_000,
+    cancelledFailedAmountIdr: 0,
+  },
 } satisfies PaymentsPageState;
 
 const meta = {

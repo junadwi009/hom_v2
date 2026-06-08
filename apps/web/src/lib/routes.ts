@@ -80,8 +80,40 @@ export const executiveTabs = [
   { label: "Approvals & Payroll", href: "/approvals" },
 ];
 
-export const quickActions = [
+export type QuickAction = { label: string; href: string };
+
+export const quickActions: QuickAction[] = [
   { label: "New appointment", href: "/appointments" },
   { label: "Open approvals", href: "/approvals" },
   { label: "Review knowledge", href: "/settings/ai-management/knowledge-studio" },
 ];
+
+// Context-aware topbar quick actions. Finance sections surface their own
+// in-page actions via deep links (?create=1 / ?export=1) so the topbar buttons
+// actually do something on the destination page; everything else keeps the
+// global defaults.
+export function getQuickActions(pathname: string): QuickAction[] {
+  if (pathname.startsWith("/financials")) {
+    return [
+      { label: "Export Report", href: "/financials?export=1" },
+      { label: "Catat Transaksi", href: "/financials?create=1" },
+      { label: "Open Payments", href: "/payments" },
+    ];
+  }
+  if (pathname.startsWith("/payments")) {
+    return [
+      { label: "Create Payment", href: "/payments?create=1" },
+      { label: "Financial Overview", href: "/financials" },
+      { label: "Export", href: "/payments?export=1" },
+    ];
+  }
+  if (pathname.startsWith("/approvals")) {
+    // "Open approvals" is redundant here — surface the Approval Rules deep link.
+    return [
+      { label: "New appointment", href: "/appointments" },
+      { label: "Approval Rules", href: "/approvals?rules=1" },
+      { label: "Review knowledge", href: "/settings/ai-management/knowledge-studio" },
+    ];
+  }
+  return quickActions;
+}

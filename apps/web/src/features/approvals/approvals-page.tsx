@@ -35,6 +35,7 @@ import {
   computeApprovalKpis,
   DOMAIN_LABELS,
   generateApprovalInsight,
+  getHighestPriorityRequest,
   getRiskBadgeTone,
   getRiskLabel,
   type CurrentApprovalUser,
@@ -80,7 +81,11 @@ export function ApprovalsPage({
   const notify = useToast();
 
   const [requests, setRequests] = useState<ApprovalRequest[]>(approvalRequestsSeed);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Auto-select the highest-priority request on first load (critical > overdue >
+  // highest financial impact > pending). Stays null — empty state — if none.
+  const [selectedId, setSelectedId] = useState<string | null>(
+    () => getHighestPriorityRequest(approvalRequestsSeed)?.id ?? null,
+  );
   const [tab, setTab] = useState(0);
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState<"all" | RiskLevel>("all");

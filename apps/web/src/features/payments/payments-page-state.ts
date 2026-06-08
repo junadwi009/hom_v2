@@ -14,6 +14,14 @@ export type PaymentTableRow = {
   updated: string;
 };
 
+export type PaymentsSummary = {
+  totalCount: number;
+  visibleCount: number;
+  paidAmountIdr: number;
+  pendingAmountIdr: number;
+  cancelledFailedAmountIdr: number;
+};
+
 export type PaymentsPageState =
   | {
       status: "ready";
@@ -21,6 +29,7 @@ export type PaymentsPageState =
       rows: PaymentTableRow[];
       total: number;
       pageSize: number;
+      summary: PaymentsSummary;
     }
   | {
       status: "empty";
@@ -52,6 +61,35 @@ export function toPaymentTableRow(payment: Payment): PaymentTableRow {
     paidAt: payment.paidAt ? toDateLabel(payment.paidAt) : PLACEHOLDER,
     referenceNumber: payment.referenceNumber ?? PLACEHOLDER,
     updated: toDateLabel(payment.updatedAt),
+  };
+}
+
+// Operation-level aggregates for the payments KPI cards. Amount sums cover the
+// loaded (visible) page; `totalCount` reflects the repository total.
+export function computePaymentsSummary(
+  items: Payment[],
+  total: number,
+): PaymentsSummary {
+  let paidAmountIdr = 0;
+  let pendingAmountIdr = 0;
+  let cancelledFailedAmountIdr = 0;
+
+  for (const payment of items) {
+    if (payment.status === "paid") {
+      paidAmountIdr += payment.amountIdr;
+    } else if (payment.status === "pending") {
+      pendingAmountIdr += payment.amountIdr;
+    } else if (payment.status === "cancelled" || payment.status === "failed") {
+      cancelledFailedAmountIdr += payment.amountIdr;
+    }
+  }
+
+  return {
+    totalCount: total,
+    visibleCount: items.length,
+    paidAmountIdr,
+    pendingAmountIdr,
+    cancelledFailedAmountIdr,
   };
 }
 

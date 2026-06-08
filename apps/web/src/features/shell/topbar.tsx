@@ -5,17 +5,13 @@ import { usePathname } from "next/navigation";
 import { Bell, CircleHelp, LogOut, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { signOutAction } from "@/features/auth/auth-actions";
-import { executiveTabs, quickActions } from "@/lib/routes";
+import { executiveTabs, getQuickActions } from "@/lib/routes";
 
 export function Topbar({ showSignOut = false }: { showSignOut?: boolean }) {
   const pathname = usePathname();
-  // "Open approvals" is redundant while on /approvals — surface "Approval Rules"
-  // instead (opens the rules modal via the ?rules=1 query).
-  const actions = quickActions.map((action) =>
-    pathname.startsWith("/approvals") && action.href === "/approvals"
-      ? { label: "Approval Rules", href: "/approvals?rules=1" }
-      : action,
-  );
+  // Context-aware quick actions per section (finance pages deep-link their own
+  // in-page actions; approvals surfaces Approval Rules; others use defaults).
+  const actions = getQuickActions(pathname);
 
   return (
     <div className="sticky top-0 z-20 border-b bg-background-app/95 px-4 py-3 backdrop-blur lg:px-6">

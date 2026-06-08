@@ -23,12 +23,14 @@ const inputClass =
 export function CreateFinancialEntrySheet({
   action,
   canCreate = true,
+  initialOpen = false,
 }: {
   action: CreateFinancialEntryFormAction;
   canCreate?: boolean;
+  initialOpen?: boolean;
 }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialOpen);
 
   const actionWithSuccess = useCallback(
     async (

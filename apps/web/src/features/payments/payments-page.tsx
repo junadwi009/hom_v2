@@ -1,17 +1,24 @@
+import { CheckCircle2, Clock, ListChecks, Wallet, XCircle } from "lucide-react";
+
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorState } from "@/components/feedback/error-state";
 import { PermissionDeniedState } from "@/components/feedback/permission-denied-state";
 import { DashboardCard } from "@/components/hom/dashboard-card";
-import { MetricCard } from "@/components/hom/metric-card";
 import { PageHeader } from "@/components/layout/page-header";
+import {
+  ClientKpiRow,
+  type ClientKpi,
+} from "@/features/clients/shared/clients-kpi-card";
+import { formatCompactIDR } from "@/lib/format";
 
 import { CreatePaymentSheet } from "./create-payment-sheet";
 import type {
   CreatePaymentFormAction,
   CreatePaymentOptionsState,
 } from "./create-payment-types";
+import { PaymentsExportButton } from "./payments-export-button";
 import type { PaymentTransitionFormAction } from "./payment-transition-types";
-import type { PaymentsPageState } from "./payments-page-state";
+import type { PaymentsPageState, PaymentsSummary } from "./payments-page-state";
 import { PaymentsTable } from "./payments-table";
 
 export function PaymentsPage({
@@ -20,6 +27,7 @@ export function PaymentsPage({
   cancelAction,
   createAction,
   createOptionsState,
+  initialCreateOpen = false,
   markPaidAction,
   state,
 }: {
@@ -28,6 +36,7 @@ export function PaymentsPage({
   cancelAction?: PaymentTransitionFormAction;
   createAction?: CreatePaymentFormAction;
   createOptionsState?: CreatePaymentOptionsState;
+  initialCreateOpen?: boolean;
   markPaidAction?: PaymentTransitionFormAction;
   state: PaymentsPageState;
 }) {
@@ -36,21 +45,29 @@ export function PaymentsPage({
       <PageHeader
         eyebrow="Finance"
         title="Payments"
-        description="Read-only manual payment records for operational reference."
+        description="Catatan pembayaran manual untuk referensi operasional (read-only)."
         actions={
-          createOptionsState ? (
-            <CreatePaymentSheet
-              action={createAction}
-              canCreatePayment={canCreatePayment}
-              optionsState={createOptionsState}
-            />
-          ) : undefined
+          <div className="flex flex-wrap items-center gap-2">
+            {state.status === "ready" ? (
+              <PaymentsExportButton rows={state.rows} />
+            ) : null}
+            {createOptionsState ? (
+              <CreatePaymentSheet
+                action={createAction}
+                canCreatePayment={canCreatePayment}
+                initialOpen={initialCreateOpen}
+                optionsState={createOptionsState}
+              />
+            ) : null}
+          </div>
         }
       />
-      <PaymentsSummary state={state} />
+      {state.status === "ready" ? (
+        <PaymentsSummaryCards summary={state.summary} />
+      ) : null}
       <DashboardCard
         title="Manual payments"
-        description="Client, package, amount, method, status, paid date, and reference."
+        description="Client, paket, jumlah, metode, status, tanggal bayar, dan referensi."
       >
         <PaymentsContent
           cancelAction={cancelAction}
@@ -63,36 +80,50 @@ export function PaymentsPage({
   );
 }
 
-function PaymentsSummary({ state }: { state: PaymentsPageState }) {
-  const loadedValue =
-    state.status === "ready" ? String(state.total) : "Unavailable";
-  const visibleValue =
-    state.status === "ready" ? String(state.rows.length) : "Unavailable";
+function PaymentsSummaryCards({ summary }: { summary: PaymentsSummary }) {
+  const cards: ClientKpi[] = [
+    {
+      icon: Wallet,
+      label: "Total Payments",
+      value: String(summary.totalCount),
+      helper: "seluruh record pembayaran",
+      accent: "default",
+    },
+    {
+      icon: CheckCircle2,
+      label: "Paid Amount",
+      value: formatCompactIDR(summary.paidAmountIdr),
+      helper: "sudah dibayar",
+      accent: "success",
+    },
+    {
+      icon: Clock,
+      label: "Pending Amount",
+      value: formatCompactIDR(summary.pendingAmountIdr),
+      helper: "menunggu pembayaran",
+      accent: "warning",
+    },
+    {
+      icon: XCircle,
+      label: "Cancelled / Failed",
+      value: formatCompactIDR(summary.cancelledFailedAmountIdr),
+      helper: "dibatalkan / gagal",
+      accent: "danger",
+    },
+    {
+      icon: ListChecks,
+      label: "Visible Records",
+      value: String(summary.visibleCount),
+      helper: "ditampilkan di halaman ini",
+      accent: "info",
+    },
+  ];
 
   return (
-    <section className="grid gap-4 md:grid-cols-3">
-      <MetricCard
-        label="Loaded payments"
-        value={loadedValue}
-        helper="repository result"
-        trend={state.status === "ready" ? "read-only" : "not loaded"}
-        tone={state.status === "ready" ? "success" : "warning"}
-      />
-      <MetricCard
-        label="Visible rows"
-        value={visibleValue}
-        helper="current page"
-        trend={state.status === "ready" ? "page 1" : "paused"}
-        tone={state.status === "ready" ? "info" : "warning"}
-      />
-      <MetricCard
-        label="Payment source"
-        value={state.source}
-        helper="local workspace"
-        trend="safe"
-        tone="neutral"
-      />
-    </section>
+    <ClientKpiRow
+      className="grid-cols-2 sm:grid-cols-3 xl:grid-cols-5"
+      items={cards}
+    />
   );
 }
 

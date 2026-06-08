@@ -8,16 +8,22 @@ import { getRequiredCurrentUser } from "@/lib/auth/current-user";
 
 export const dynamic = "force-dynamic";
 
-export default async function PaymentsRoute() {
-  const [state, createOptionsState, currentUser] = await Promise.all([
+export default async function PaymentsRoute({
+  searchParams,
+}: {
+  searchParams: Promise<{ create?: string }>;
+}) {
+  const [state, createOptionsState, currentUser, params] = await Promise.all([
     loadPaymentsPage(),
     loadCreatePaymentOptions(),
     getRequiredCurrentUser(),
+    searchParams,
   ]);
 
   const canManagePayment = currentUser.permissions.includes(
     "can_manage_payments",
   );
+  const initialCreateOpen = params?.create === "1" && canManagePayment;
 
   return (
     <PaymentsPage
@@ -26,6 +32,7 @@ export default async function PaymentsRoute() {
       cancelAction={cancelPaymentAction}
       createAction={createPaymentAction}
       createOptionsState={createOptionsState}
+      initialCreateOpen={initialCreateOpen}
       markPaidAction={markPaidPaymentAction}
       state={state}
     />

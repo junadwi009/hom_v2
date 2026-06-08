@@ -246,3 +246,135 @@ pattern: server action → submit (Zod + permission gate) → Supabase wrapper �
 - **RPCs** — `approve` / `reject` / `escalate` (plus `request_more_info`, `create_approval_request`,
   `list_approval_requests`), each gated by the mapped permission in `approval-helpers.ts`.
 - **`audit_logs` persistence** — every approval action written to `audit_logs` for the full trail.
+
+---
+
+## UX Refinement Pass (Payments + Approvals + Financials + Topbar)
+
+**Implementation date:** 2026-06-08 (local-first dev session). Committed as the second
+checkpoint after `b27ef1d` (message: `Refine financial payments and approval UX`).
+
+Follow-up UX-only pass. **No Approval Backend, no migrations, no RPC/workflow changes.**
+Approval workflow remains local-state; Financials remains real Supabase/RPC-backed; the
+demo financial entry (`Penjualan Membership` / Rp 8.500.000) was **kept**, not deleted.
+
+**Routes affected:** `/payments`, `/approvals`, `/financials` (+ the shared topbar shell).
+
+**Files created**
+- `apps/web/src/features/payments/payments-export-button.tsx` — client CSV export + `?export=1` deep link.
+
+**Files modified**
+- `apps/web/src/features/payments/payments-page.tsx` — business KPI cards + Export/Create header.
+- `apps/web/src/features/payments/payments-page-state.ts` — `PaymentsSummary` type + `computePaymentsSummary`.
+- `apps/web/src/features/payments/payments-page-loader.ts` — aggregate summary from real result.
+- `apps/web/src/features/payments/payments-page.stories.tsx` — story `summary` for the new type.
+- `apps/web/src/app/payments/page.tsx` — `?create=1` → initialOpen (gated `can_manage_payments`).
+- `apps/web/src/features/approvals/approval-helpers.ts` — `getHighestPriorityRequest` / `compareApprovalPriority`.
+- `apps/web/src/features/approvals/approvals-page.tsx` — auto-select highest-priority on load.
+- `apps/web/src/features/financials/financials-page.tsx` — low-data notice + `?create=1`/`?export=1`.
+- `apps/web/src/features/financials/create-financial-entry-sheet.tsx` — `initialOpen` prop.
+- `apps/web/src/features/shell/topbar.tsx` — uses `getQuickActions(pathname)`.
+- `apps/web/src/lib/routes.ts` — `getQuickActions` + `QuickAction` type.
+- `docs/implementation-logs/FINANCIALS_APPROVALS_IMPLEMENTATION_LOG.md` — this section.
+
+**Data sources used**
+- **Payments**: REAL — KPIs aggregated server-side from the existing payment repository result
+  (`payments-page-loader`); no new data source. Amount sums cover the loaded page; `Total
+  Payments` = repository total.
+- **Approvals**: LOCAL/MOCK — auto-select operates on the same typed seed (`approvals-data.ts`).
+- **Financials**: REAL — unchanged `financial_entries` loader; the low-data notice only reflects
+  the real entry count.
+
+**Real Supabase/RPC-backed parts:** Financials load + create (`create_financial_entry`), Payments
+loader + mark-paid/cancel/create RPC actions — all untouched and still real.
+
+**Mock / local-state / demo-only parts:** Approval Center workflow + auto-select (no persistence);
+Payments client CSV export (read-only, no RPC); the kept demo financial entry.
+
+**Permission gates (affected):** Payments `?create=1` deep link still respects `can_manage_payments`
+(initialOpen only when permitted). Financials create/export still gated by `can_edit_financials` /
+`can_export_financial_report` (the `?export=1` deep link no-ops without the export permission).
+Approval permission gates (`canApproveRequest`, `canViewSensitive`) unchanged. No new gates added.
+
+**1. Payments — business-facing KPIs (`/payments`)**
+- Replaced the technical KPI cards (`Loaded payments` / `repository result`, `Visible rows`
+  / `page 1`, `Payment source` / `supabase` / `safe`) with five operation KPIs:
+  **Total Payments, Paid Amount, Pending Amount, Cancelled/Failed Amount, Visible Records**.
+- New `computePaymentsSummary(items, total)` in `payments-page-state.ts` (added `PaymentsSummary`
+  type + `summary` on the ready state); aggregated in `payments-page-loader.ts` from the real
+  repository result. Amount sums cover the loaded page; `Total Payments` = repository total.
+- `payments-page.tsx`: dropped `MetricCard`, renders `ClientKpiRow`; Indonesian page/section
+  copy; header now shows **Export** + **Create Payment**. Real loader/actions (mark-paid,
+  cancel, create RPC) untouched.
+- New `payments-export-button.tsx` (client): CSV export of visible rows; also honours the
+  `?export=1` topbar deep link (fires once, then cleans the URL).
+- `app/payments/page.tsx`: reads `?create=1` → opens the Create Payment sheet (`initialOpen`),
+  gated by `can_manage_payments`.
+
+**2. Approval Center — auto-select highest priority (`/approvals`)**
+- New `getHighestPriorityRequest()` + `compareApprovalPriority()` in `approval-helpers.ts`.
+  Priority order: **critical risk > overdue (>24h) > highest financial impact > pending**
+  (active requests only).
+- `approvals-page.tsx`: `selectedId` now lazily initialises to the highest-priority request,
+  so the detail panel is populated on load; stays the empty state when there are no active
+  requests. All local-state workflow behaviour preserved.
+
+**3. Financials — low-data state (`/financials`)**
+- Added a low-data notice (shown when 1–2 real entries exist) clarifying the figures come
+  from real Supabase data and pointing to **Catat Transaksi**. **No fake/seed data added** —
+  the project has no accepted financials seed pattern, so none was introduced.
+- `create-financial-entry-sheet.tsx` gained an `initialOpen` prop; `financials-page.tsx`
+  honours `?create=1` (open sheet) and `?export=1` (run CSV export once, then clean the URL).
+
+**4. Topbar — context-aware quick actions (`shell/topbar.tsx`, `lib/routes.ts`)**
+- New `getQuickActions(pathname)`:
+  - `/financials` → Export Report · Catat Transaksi · Open Payments
+  - `/payments` → Create Payment · Financial Overview · Export
+  - `/approvals` → keeps Approval Rules (+ New appointment, Review knowledge)
+  - else → global defaults.
+- Finance in-page actions are surfaced via deep links (`?create=1` / `?export=1`) so the
+  topbar buttons act on the destination page.
+
+**Validation**
+- `corepack pnpm --dir apps/web typecheck` = **PASS**
+- `corepack pnpm --dir apps/web lint` = **PASS** (0 errors, 0 warnings)
+- `corepack pnpm --dir apps/web build` = **PASS** (exit 0)
+- Browser-verified against a fresh `next start` build: payments KPIs (24 / Rp 21,2 jt paid /
+  Rp 15,4 jt pending / Rp 0 / 20 visible), approvals auto-select (`Hard-delete data klien
+  duplikat` — critical + overdue), financials low-data notice, and per-route topbar actions.
+
+**Manual QA checklist**
+1. `/payments`: 5 business KPI cards render (no "repository result/supabase/safe/page 1");
+   Export downloads CSV of visible rows; topbar shows Create Payment / Financial Overview / Export.
+2. `/payments?create=1`: Create Payment sheet opens on load (only with `can_manage_payments`).
+3. `/approvals`: detail panel pre-selects the highest-priority request on load; approve/reject/
+   ask-info/escalate still mutate local state; empty state shown when nothing is actionable.
+4. `/financials`: low-data notice appears with 1–2 real entries; demo entry still listed; topbar
+   shows Export Report / Catat Transaksi / Open Payments; `?create=1` opens sheet, `?export=1`
+   downloads CSV (with export permission).
+
+**Known limitations**
+- Payments KPI amount sums cover the loaded page (page size 20); `Total Payments` is the
+  repository total. Cross-page amount totals are not computed (no pagination aggregation).
+- Approval auto-select and the approve/reject/escalate workflow remain **local-state only** —
+  refresh resets to seed; nothing persists.
+- Payments "Export" and Financials `?export=1` are client-side CSV of the currently loaded data.
+
+**Issues found / fixed**
+- The payments story `readyState` needed the new `summary` field to satisfy `PaymentsPageState`
+  (added). No other type fallout.
+
+**Remaining TODOs**
+- Persist the Approval Center (see next phase) so auto-select and actions survive refresh.
+- Optional: server-side payments aggregation for true cross-page Paid/Pending totals.
+
+**Next recommended phase — Approval Backend**
+- Persisted `approval_requests` / `approval_events` / `approval_rules`, RPC
+  `approve` / `reject` / `escalate` (+ `request_more_info`, `create`, `list`), and `audit_logs`
+  integration — following the existing server-action → Zod + permission gate → Supabase wrapper →
+  RPC `SECURITY DEFINER` → `audit_logs` → `revalidatePath` pattern. **Not started in this pass.**
+
+**Not done (out of scope, as instructed)**
+- No Approval Backend / persistence, no migrations, no change to approval local-state workflow.
+- Demo financial entry left in place.
+- Not pushed.

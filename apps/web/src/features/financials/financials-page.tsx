@@ -13,8 +13,8 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { EmptyState } from "@/components/feedback/empty-state";
 import { DashboardCard } from "@/components/hom/dashboard-card";
@@ -59,6 +59,9 @@ export function FinancialsPage({
 }) {
   const router = useRouter();
   const notify = useToast();
+  const searchParams = useSearchParams();
+  const wantCreate = searchParams.get("create") === "1";
+  const wantExport = searchParams.get("export") === "1";
 
   const [period, setPeriod] = useState<FinancialPeriod>("this_month");
   const [search, setSearch] = useState("");
@@ -103,7 +106,7 @@ export function FinancialsPage({
     });
   }, [periodEntries, search, typeFilter, categoryFilter]);
 
-  const exportCsv = () => {
+  const exportCsv = useCallback(() => {
     if (!canExport) {
       notify("Anda tidak memiliki izin export laporan finansial.");
       return;
@@ -127,7 +130,21 @@ export function FinancialsPage({
     link.click();
     URL.revokeObjectURL(url);
     notify("Laporan CSV diunduh.");
-  };
+  }, [canExport, notify, period, periodEntries]);
+
+  // Honour the `?export=1` topbar deep link: fire once, then clean the URL so a
+  // reload won't re-download. Resets when the param is cleared so a later click
+  // works again.
+  const exportHandledRef = useRef(false);
+  useEffect(() => {
+    if (wantExport && !exportHandledRef.current) {
+      exportHandledRef.current = true;
+      exportCsv();
+      router.replace("/financials");
+    } else if (!wantExport) {
+      exportHandledRef.current = false;
+    }
+  }, [wantExport, exportCsv, router]);
 
   const periodLabel =
     FINANCIAL_PERIODS.find((p) => p.value === period)?.label ?? "";
@@ -213,7 +230,11 @@ export function FinancialsPage({
               Export Report
             </Button>
             {createAction ? (
-              <CreateFinancialEntrySheet action={createAction} canCreate={canCreate} />
+              <CreateFinancialEntrySheet
+                action={createAction}
+                canCreate={canCreate}
+                initialOpen={wantCreate && canCreate}
+              />
             ) : null}
           </div>
         }
@@ -223,6 +244,21 @@ export function FinancialsPage({
         className="grid-cols-2 sm:grid-cols-3 xl:grid-cols-6"
         items={kpiCards}
       />
+
+      {/* Low-data notice — keep the dashboard looking intentional, not broken,
+          when only a few real entries exist. No fake data is added. */}
+      {entries.length > 0 && entries.length <= 2 ? (
+        <p className="rounded-lg border border-dashed border-accent-gold-muted bg-background-card px-4 py-3 text-xs leading-5 text-foreground-muted">
+          Angka di atas dihitung dari{" "}
+          <span className="font-medium text-foreground">
+            {entries.length} entri nyata
+          </span>{" "}
+          di database (Supabase). Tren &amp; analitik akan makin kaya seiring
+          transaksi bertambah — gunakan{" "}
+          <span className="font-medium text-foreground">Catat Transaksi</span>{" "}
+          untuk menambah data.
+        </p>
+      ) : null}
 
       {/* Insight */}
       <section className="rounded-lg border border-accent-gold-muted bg-accent-gold-muted/20 p-4">

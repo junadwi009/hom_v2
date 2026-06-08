@@ -8,6 +8,7 @@ import {
 } from "@/lib/payments/repository-factory";
 
 import {
+  computePaymentsSummary,
   toPaymentTableRow,
   type PaymentDataSource,
   type PaymentsPageState,
@@ -47,6 +48,7 @@ export async function loadPaymentsPage(
       rows: result.items.map(toPaymentTableRow),
       total: result.total,
       pageSize: result.pageSize,
+      summary: computePaymentsSummary(result.items, result.total),
     };
   } catch (error) {
     return toSafePaymentsPageErrorState(error, source);
