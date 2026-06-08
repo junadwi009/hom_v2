@@ -15,6 +15,9 @@ const knownErrorCodes = [
   "TITLE_REQUIRED",
   "DOMAIN_INVALID",
   "RISK_INVALID",
+  "SECOND_APPROVAL_REQUIRED_APPROVE",
+  "SECOND_APPROVAL_REQUIRED_REJECT",
+  "SECOND_APPROVAL_INVALID_APPROVER",
 ] as const;
 
 export type ApprovalMutationErrorCode =

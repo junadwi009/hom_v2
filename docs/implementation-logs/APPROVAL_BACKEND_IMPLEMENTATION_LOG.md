@@ -315,3 +315,139 @@ SQL↔TS access-gate alignment (M3), and demo-seed production safety (M4).
 - With C1 (data-layer redaction) and M3 (gate alignment) fixed, the branch is **safe to push for
   staging**. **Not production-ready** until segregation-of-duties (`requires_second_approval`) and
   stricter create gating are added — required before approvals execute real side effects.
+
+---
+
+# Pre-Merge Hardening Pass — Title Redaction, Create Gate, Second Approval
+
+## 1. Task title
+Approval Backend pre-merge hardening: redact sensitive **title**, tighten `create_approval_request`
+with a per-domain gate + FK checks, and enforce `requires_second_approval` (segregation of duties).
+
+## 2. Implementation date
+2026-06-08.
+
+## 3. Branch name
+`phase-approval-backend`.
+
+## 4. Base commit
+`f7b4599` ("Harden approval backend data access").
+
+## 5. Scope completed
+- Sensitive **title** is now redacted at the data layer (extends the prior field redaction).
+- `create_approval_request` replaced its broad read gate with a **per-domain create gate**, plus FK
+  existence checks and a client-reference guard.
+- **Segregation of duties** enforced: a request's requester cannot approve/reject their own
+  `requires_second_approval` request, and cannot be set as the escalation approver.
+- No real approval side effects added (status-only).
+
+## 6. Files created
+- `supabase/migrations/20260608000400_approval_premerge_hardening.sql`.
+
+## 7. Files modified
+- `apps/web/src/lib/approvals/supabase/approval-mutations.ts` — new known error codes.
+- `apps/web/src/lib/approvals/server/submit-approval-action.ts` — clean messages for SoD blocks.
+
+## 8. Migrations changed/added
+- Added `20260608000400_approval_premerge_hardening.sql` (view rebuild + create gate + SoD).
+  Applied locally via `migration up` (no reset; demo financial entry preserved).
+
+## 9. RPCs changed
+- `create_approval_request` — gate is now `private.can_create_approval_request(type, domain)`; adds
+  `BRANCH_NOT_FOUND` / `APPROVER_NOT_FOUND` / `CLIENT_NOT_FOUND` / `CLIENT_REF_NOT_ALLOWED` checks.
+- `private.transition_approval_request` (shared by approve/reject/more-info/escalate) — adds SoD
+  guard raising `SECOND_APPROVAL_REQUIRED_APPROVE` / `_REQUIRED_REJECT` / `_INVALID_APPROVER`; audit
+  metadata gains `secondApproval`.
+- No RPC signatures changed (all `create or replace`).
+
+## 10. SQL helper changes
+- New `private.can_create_approval_request(p_request_type, p_domain)` — per-domain create mapping
+  (owner bypass). All referenced permission keys exist in the catalog (no compromises).
+
+## 11. RLS/permission behavior
+- RLS unchanged (still read-only, RPC-only writes). Read gate (`can_access_approvals`) and per-request
+  approve gate (`can_approve_request`) unchanged. **New, stricter create gate** is independent of the
+  read gate: opening the center / reading no longer implies the ability to create any request type.
+
+## 12. Sensitive title redaction behavior
+- For rows where `sensitive = true OR domain = 'clinical'`, callers without clinical access now get
+  `title` → **"Permintaan approval klinis"** (in addition to the already-redacted `reason`,
+  `risk_check`, `related_record_label`, `client_name`, `evidence`, and event notes). Owners/clinical
+  users and all non-sensitive rows are unaffected.
+
+## 13. create_approval_request stricter gate
+- Per-domain requirements (owner bypasses all):
+  - financial → `can_edit_financials` / `can_approve_reimbursements` / `can_manage_payments`
+  - clinical → `can_manage_clinical_cases` / `can_request_note_unlock` / `can_approve_note_unlock`
+  - marketing → `can_approve_whatsapp_blast` / `can_publish_knowledge` / `can_manage_knowledge`
+  - admin_governance → `can_manage_users` / `can_manage_roles_permissions`
+  - client_membership → `can_manage_clients` / `can_manage_client_packages`
+  - booking → `can_manage_appointments` / `can_reschedule_appointments`
+  - team → `can_manage_practitioners`
+- FK validation: branch/approver(active)/client must exist; `client_id` references are rejected
+  (`CLIENT_REF_NOT_ALLOWED`) for creators who can't view clients (mitigates client-name enumeration).
+
+## 14. requires_second_approval enforcement
+- In `approve`: requester (== `requested_by`) is blocked (`SECOND_APPROVAL_REQUIRED_APPROVE`).
+- In `reject`: requester is blocked (`SECOND_APPROVAL_REQUIRED_REJECT`).
+- In `escalate`: cannot set the requester as the new approver (`SECOND_APPROVAL_INVALID_APPROVER`).
+- `need_more_info` by the requester is still allowed. Guard raises **before** any write, so blocked
+  attempts persist nothing (no status change, no event, no audit).
+- UI surfaces these via the existing server-action error state (clean toast; no crash, no new flow).
+
+## 15. REAL Supabase/RPC-backed parts
+- All approval reads/writes remain real + audited. Redaction, create gate, and SoD are enforced in
+  SQL (server-side), not the UI.
+
+## 16. MOCK/demo/local-state parts remaining
+- `approvals-data.ts` fallback (non-Supabase mode). Create-request/Export header buttons still stubs.
+- `[DEMO]` seed local/dev-only; `…000400` also flips the financial demo row to
+  `requires_second_approval = true` (local/dev-guarded) so SoD is browser-testable.
+- **No real domain side-effects** (no refund/note-unlock/role-change/export/WhatsApp execution).
+
+## 17. Audit log behavior
+- Unchanged for successful transitions (now includes `secondApproval` in metadata). Blocked SoD
+  attempts and denied creates write **no** audit row (fail-before-write). Verified.
+
+## 18. Validation commands run
+- `supabase migration up --local`; `corepack pnpm --dir apps/web typecheck | lint | build`;
+  psql impersonation suite (owner / finance_admin / second owner) in rollback transactions.
+
+## 19. Test results
+- migration up **PASS** (no reset; demo financial entry preserved).
+- typecheck **PASS**; lint **PASS** (0/0); build **PASS** (exit 0).
+- **Title redaction PASS** — owner: full clinical title; `finance_admin`: title → "Permintaan
+  approval klinis", details redacted; financial/admin/marketing rows intact.
+- **Create gate PASS** — `finance_admin`: financial create ALLOWED (APR-00005), clinical DENIED,
+  admin DENIED.
+- **SoD PASS** — requester (director) approve → `SECOND_APPROVAL_REQUIRED_APPROVE`; a different
+  authorized owner approve → success (audit `secondApproval=true`, event written).
+
+## 20. Manual QA checklist (active browser, localhost:3000)
+1. `/approvals` loads real requests; owner sees full clinical detail + sensitive warning. ✅
+2. Refund demo row (now `requires_second_approval`) — owner (its requester) Approve with note →
+   **blocked**; row stays "Menunggu"; clean error; **no** event/audit written. ✅
+3. `/settings/audit-logs` still shows `approval_request.*`; `/financials` (demo entry present) and
+   `/payments` render — no regression. ✅
+4. Non-clinical title/detail redaction verified at the data layer via psql (no seeded non-clinical
+   browser login). ✅
+
+## 21. Issues found / fixed
+- Initial SoD "different approver" test used `finance_admin`, which (correctly) lacks
+  `can_approve_reimbursements` for the reimbursement-type request → re-tested with a second owner,
+  which succeeded. Confirms per-type approve gate + SoD both hold.
+
+## 22. Remaining TODOs
+- Multi-stage / N-approver workflows (only single second-approval guard implemented).
+- Stricter per-**type** create mapping (currently per-domain) + per-actor client-access for related
+  records beyond `client_id`.
+- Failed-action audit rows (currently denied/blocked actions are not audited).
+- Create-request UI sheet + real export; escalate role→approver mapping.
+
+## 23. Production-readiness verdict
+- **Approval actions are persisted and audited**; **real side-effects are still NOT implemented**
+  (status-only). Demo seed + the second-approval demo flag are **local/dev-only**.
+- C1/M3/M4 + title redaction + stricter create gate + segregation of duties are now in place. The
+  branch is **safe to push and safe to merge to staging**. **Production** still requires: real
+  side-effect execution design (out of scope here), multi-stage approval if needed, and the
+  remaining TODOs — and migrations must be applied to the target DB before/with the deploy.

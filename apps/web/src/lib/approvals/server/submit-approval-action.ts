@@ -130,6 +130,23 @@ function mapError(error: unknown): ApprovalActionResult {
           status: "note_required",
           message: "Catatan wajib untuk aksi ini (risiko tinggi/kritis).",
         };
+      case "SECOND_APPROVAL_REQUIRED_APPROVE":
+        return {
+          status: "permission_denied",
+          message:
+            "Butuh approval kedua. Pengaju tidak boleh menyetujui requestnya sendiri.",
+        };
+      case "SECOND_APPROVAL_REQUIRED_REJECT":
+        return {
+          status: "permission_denied",
+          message:
+            "Butuh approval kedua. Pengaju tidak boleh menolak requestnya sendiri.",
+        };
+      case "SECOND_APPROVAL_INVALID_APPROVER":
+        return {
+          status: "permission_denied",
+          message: "Approver kedua harus berbeda dari pengaju request.",
+        };
       default:
         return { status: "unknown_error", message: "Aksi approval gagal. Coba lagi." };
     }
