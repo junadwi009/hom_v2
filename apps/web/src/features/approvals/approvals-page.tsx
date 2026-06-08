@@ -24,6 +24,11 @@ import { ClientTabs } from "@/features/clients/shared/clients-tabs";
 import { useToast } from "@/features/shell/toast";
 import { formatCompactIDR } from "@/lib/format";
 
+import type {
+  ApprovalActionInput,
+  ApprovalActionResult,
+} from "@/lib/approvals/server/submit-approval-action";
+
 import {
   ApprovalActionModal,
   type ApprovalActionType,
@@ -46,6 +51,7 @@ import { approvalRequestsSeed, approvalRulesSeed } from "./approvals-data";
 import type {
   ApprovalDomain,
   ApprovalRequest,
+  ApprovalRule,
   ApprovalStatus,
   RiskLevel,
 } from "./approval-types";
@@ -72,19 +78,37 @@ const STATUS_TO_NEW: Record<ApprovalActionType, ApprovalStatus> = {
 
 export function ApprovalsPage({
   currentUser,
+  dataSource = "mock",
   defaultShowRules = false,
+  initialRequests,
+  initialRules,
+  runAction,
 }: {
   currentUser: CurrentApprovalUser;
+  dataSource?: "supabase" | "mock";
   defaultShowRules?: boolean;
+  initialRequests?: ApprovalRequest[];
+  initialRules?: ApprovalRule[];
+  runAction?: (input: ApprovalActionInput) => Promise<ApprovalActionResult>;
 }) {
   const router = useRouter();
   const notify = useToast();
 
-  const [requests, setRequests] = useState<ApprovalRequest[]>(approvalRequestsSeed);
+  // Real persisted data in Supabase mode (even if empty → empty state); the
+  // labeled local seed only as a fallback when not running against Supabase.
+  const seededRequests =
+    dataSource === "supabase" ? (initialRequests ?? []) : approvalRequestsSeed;
+  const rulesToShow =
+    dataSource === "supabase" && initialRules && initialRules.length > 0
+      ? initialRules
+      : approvalRulesSeed;
+
+  const [requests, setRequests] = useState<ApprovalRequest[]>(seededRequests);
+  const [actionPending, setActionPending] = useState(false);
   // Auto-select the highest-priority request on first load (critical > overdue >
   // highest financial impact > pending). Stays null — empty state — if none.
   const [selectedId, setSelectedId] = useState<string | null>(
-    () => getHighestPriorityRequest(approvalRequestsSeed)?.id ?? null,
+    () => getHighestPriorityRequest(seededRequests)?.id ?? null,
   );
   const [tab, setTab] = useState(0);
   const [search, setSearch] = useState("");
@@ -127,12 +151,15 @@ export function ApprovalsPage({
     ? canViewSensitive(currentUser, selected)
     : true;
 
-  const applyAction = (action: ApprovalActionType, note: string) => {
-    if (!selected) return;
+  const applyActionLocally = (
+    target: ApprovalRequest,
+    action: ApprovalActionType,
+    note: string,
+  ) => {
     const newStatus = STATUS_TO_NEW[action];
     setRequests((prev) =>
       prev.map((r) =>
-        r.id === selected.id
+        r.id === target.id
           ? {
               ...r,
               status: newStatus,
@@ -150,8 +177,41 @@ export function ApprovalsPage({
           : r,
       ),
     );
-    setActiveAction(null);
-    notify(`Request "${selected.title}" → ${newStatus} (lokal).`);
+  };
+
+  const applyAction = async (action: ApprovalActionType, note: string) => {
+    if (!selected || actionPending) return;
+
+    // Mock / non-Supabase mode: keep the local-state-only behaviour.
+    if (dataSource !== "supabase" || !runAction) {
+      applyActionLocally(selected, action, note);
+      setActiveAction(null);
+      notify(`Request "${selected.title}" → ${STATUS_TO_NEW[action]} (lokal).`);
+      return;
+    }
+
+    // Supabase mode: persist via the audited RPC, then reflect the real result.
+    setActionPending(true);
+    const result = await runAction({
+      action,
+      requestId: selected.id,
+      note: note || undefined,
+    });
+    setActionPending(false);
+
+    if (result.status === "success") {
+      const updated = result.request;
+      setRequests((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+      setActiveAction(null);
+      notify(result.message);
+      return;
+    }
+
+    notify(result.message);
+    // Keep the modal open for fixable problems so the user can retry.
+    if (result.status !== "note_required" && result.status !== "validation_error") {
+      setActiveAction(null);
+    }
   };
 
   const viewRelated = () => {
@@ -311,7 +371,7 @@ export function ApprovalsPage({
       ) : null}
 
       {showRules ? (
-        <ApprovalRulesModal onClose={() => setShowRules(false)} rules={approvalRulesSeed} />
+        <ApprovalRulesModal onClose={() => setShowRules(false)} rules={rulesToShow} />
       ) : null}
     </div>
   );
