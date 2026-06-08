@@ -10,10 +10,17 @@ import { cn } from "@/lib/utils";
 
 import { formatRoleName } from "./role-options";
 
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).slice(0, 2);
+  return parts.map((part) => part.charAt(0).toUpperCase()).join("") || "?";
+}
+
 type UsersTableProps = {
   users: AdminUser[];
   currentUserId?: string | null;
   canManage?: boolean;
+  selectedId?: string | null;
+  onSelect?: (user: AdminUser) => void;
   onEditRoles: (user: AdminUser) => void;
   onChangeStatus: (user: AdminUser) => void;
 };
@@ -22,6 +29,8 @@ export function UsersTable({
   users,
   currentUserId,
   canManage = false,
+  selectedId,
+  onSelect,
   onEditRoles,
   onChangeStatus,
 }: UsersTableProps) {
@@ -62,16 +71,28 @@ export function UsersTable({
               const isSelf = currentUserId === user.id;
               return (
                 <tr
-                  className="border-b last:border-b-0 hover:bg-stone-50/70"
+                  className={cn(
+                    "border-b last:border-b-0 hover:bg-stone-50/70",
+                    onSelect && "cursor-pointer",
+                    selectedId === user.id && "bg-accent-gold-muted/40",
+                  )}
                   key={user.id}
+                  onClick={onSelect ? () => onSelect(user) : undefined}
                 >
                   <td className="px-4 py-3 font-medium text-foreground">
-                    {user.fullName}
-                    {isSelf ? (
-                      <span className="ml-2 text-xs text-foreground-muted">
-                        (Anda)
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent-gold-muted text-xs font-semibold text-amber-900">
+                        {initials(user.fullName)}
                       </span>
-                    ) : null}
+                      <span>
+                        {user.fullName}
+                        {isSelf ? (
+                          <span className="ml-2 text-xs text-foreground-muted">
+                            (Anda)
+                          </span>
+                        ) : null}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-foreground-muted">
                     {user.email}
@@ -96,7 +117,10 @@ export function UsersTable({
                     <div className="flex justify-end gap-2">
                       <Button
                         disabled={!canManage || isSelf}
-                        onClick={() => onEditRoles(user)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onEditRoles(user);
+                        }}
                         size="sm"
                         title={isSelf ? "Tidak bisa mengubah akun sendiri." : undefined}
                         type="button"
@@ -106,7 +130,10 @@ export function UsersTable({
                       </Button>
                       <Button
                         disabled={!canManage || isSelf}
-                        onClick={() => onChangeStatus(user)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onChangeStatus(user);
+                        }}
                         size="sm"
                         title={isSelf ? "Tidak bisa mengubah akun sendiri." : undefined}
                         type="button"

@@ -1,6 +1,51 @@
-import { ModuleMockPage } from "@/features/module-page/module-mock-page";
-import { modulePages } from "@/lib/mock-data";
+import { DashboardCard } from "@/components/hom/dashboard-card";
+import { PageHeader } from "@/components/layout/page-header";
+import { Badge } from "@/components/ui/badge";
+import { ApprovalsPage } from "@/features/approvals/approvals-page";
+import { canAccessApprovalCenter } from "@/features/approvals/approval-helpers";
+import { getCurrentUser } from "@/lib/auth/current-user";
 
-export default function ApprovalsPage() {
-  return <ModuleMockPage {...modulePages.approvals} />;
+export const dynamic = "force-dynamic";
+
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ rules?: string }>;
+}) {
+  const [user, params] = await Promise.all([
+    getCurrentUser().catch(() => null),
+    searchParams,
+  ]);
+  const defaultShowRules = params?.rules === "1";
+
+  const currentUser = {
+    id: user?.id ?? "anonymous",
+    name: user?.fullName ?? "Pengguna",
+    roles: user?.roles ?? [],
+    permissions: user?.permissions ?? [],
+  };
+
+  if (!canAccessApprovalCenter(currentUser)) {
+    return (
+      <>
+        <PageHeader
+          eyebrow="Governance"
+          title="Approval Center"
+          description="Kelola semua permintaan persetujuan lintas modul."
+          actions={<Badge tone="warning">Akses ditolak</Badge>}
+        />
+        <DashboardCard
+          title="Tidak memiliki akses"
+          description="Approval Center hanya untuk peran manajemen/owner."
+        >
+          <p className="text-sm leading-6 text-foreground-muted">
+            Anda tidak memiliki izin manajemen yang relevan untuk membuka Approval
+            Center. Hubungi administrator studio bila Anda membutuhkan akses ini.
+          </p>
+        </DashboardCard>
+      </>
+    );
+  }
+
+  return <ApprovalsPage currentUser={currentUser} defaultShowRules={defaultShowRules} />;
 }

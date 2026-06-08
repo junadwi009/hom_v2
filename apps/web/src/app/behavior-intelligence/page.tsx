@@ -1,6 +1,8 @@
-import { ModuleMockPage } from "@/features/module-page/module-mock-page";
-import { modulePages } from "@/lib/mock-data";
+import { redirect } from "next/navigation";
 
-export default function BehaviorIntelligencePage() {
-  return <ModuleMockPage {...modulePages.behavior} />;
+export const dynamic = "force-dynamic";
+
+// Moved under Settings → AI Management.
+export default function BehaviorIntelligenceRedirect() {
+  redirect("/settings/ai-management/behavior-intelligence");
 }

@@ -1,6 +1,8 @@
-import { ModuleMockPage } from "@/features/module-page/module-mock-page";
-import { modulePages } from "@/lib/mock-data";
+import { redirect } from "next/navigation";
 
-export default function KnowledgeStudioPage() {
-  return <ModuleMockPage {...modulePages.knowledgeStudio} />;
+export const dynamic = "force-dynamic";
+
+// Moved under Settings → AI Management.
+export default function KnowledgeStudioRedirect() {
+  redirect("/settings/ai-management/knowledge-studio");
 }

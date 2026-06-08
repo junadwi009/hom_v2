@@ -38,6 +38,13 @@ export default async function AppointmentsPage() {
   return (
     <AppointmentsScheduleView
       events={events}
+      canManage={canManageAppointments}
+      calendarActions={{
+        reschedule: rescheduleAppointmentAction,
+        complete: completeAppointmentAction,
+        cancel: cancelAppointmentAction,
+        markNoShow: markNoShowAppointmentAction,
+      }}
       listSlot={
         <AppointmentsCatalogPage
           canCancelAppointment={canManageAppointments}

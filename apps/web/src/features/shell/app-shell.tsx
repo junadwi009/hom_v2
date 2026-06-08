@@ -141,7 +141,7 @@ export function AppShell({
       <div className={cn("transition-[padding] duration-200 ease-out", collapsed ? "lg:pl-20" : "lg:pl-72")}>
         <Topbar showSignOut={showSignOut} />
         <motion.main
-          className="mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-7xl flex-col gap-6 px-4 py-6 lg:px-6"
+          className="mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-[1920px] flex-col gap-6 px-4 py-6 lg:px-6"
           initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.18, ease: "easeOut" }}

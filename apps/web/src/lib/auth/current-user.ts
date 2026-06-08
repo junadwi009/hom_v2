@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import {
   currentUserSchema,
   toShellUser,
@@ -10,8 +12,16 @@ import { getAuthMode } from "@/lib/env/app-mode";
 
 import { SupabaseAuthBoundaryError } from "./errors";
 
+// Resolve the current user once per server request. RootLayout, the page, and
+// any server action in the same render all share this single resolution instead
+// of each re-running auth.getUser() + the get_current_app_user_context RPC.
+// React's cache() memoizes by call site for the duration of one request.
+const resolveCurrentUser = cache(async (): Promise<CurrentUser | null> => {
+  return getAuthBoundary().getCurrentUser();
+});
+
 export async function getCurrentUser(): Promise<CurrentUser | null> {
-  const user = await getAuthBoundary().getCurrentUser();
+  const user = await resolveCurrentUser();
 
   if (!user) {
     return null;
@@ -21,9 +31,13 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 }
 
 export async function getRequiredCurrentUser(): Promise<CurrentUser> {
-  return currentUserSchema.parse(
-    await getAuthBoundary().requireAuthenticatedUser(),
-  );
+  const user = await resolveCurrentUser();
+
+  if (!user) {
+    throw new SupabaseAuthBoundaryError("AUTH_REQUIRED");
+  }
+
+  return currentUserSchema.parse(user);
 }
 
 export async function getShellUser(): Promise<ShellUser> {

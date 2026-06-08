@@ -5,13 +5,19 @@ import { DashboardCard } from "@/components/hom/dashboard-card";
 import { MetricCard } from "@/components/hom/metric-card";
 import { PageHeader } from "@/components/layout/page-header";
 
+import { CreatePractitionerSheet } from "./create-practitioner-sheet";
+import type { CreatePractitionerFormAction } from "./create-practitioner-types";
 import type { PractitionersPageState } from "./practitioners-page-state";
 import { PractitionersTable } from "./practitioners-table";
 
 export function PractitionersCatalogPage({
   state,
+  createAction,
+  canCreate = false,
 }: {
   state: PractitionersPageState;
+  createAction?: CreatePractitionerFormAction;
+  canCreate?: boolean;
 }) {
   return (
     <>
@@ -19,6 +25,11 @@ export function PractitionersCatalogPage({
         eyebrow="Registry"
         title="Practitioners"
         description="Practitioner roster and app profile linkage for operational review."
+        actions={
+          createAction ? (
+            <CreatePractitionerSheet action={createAction} canCreate={canCreate} />
+          ) : undefined
+        }
       />
       <PractitionersSummary state={state} />
       <DashboardCard

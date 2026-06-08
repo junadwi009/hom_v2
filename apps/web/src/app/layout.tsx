@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppShell } from "@/features/shell/app-shell";
+import { ToastProvider } from "@/features/shell/toast";
 import { getOptionalShellUser } from "@/lib/auth/current-user";
 import { getAuthMode } from "@/lib/env/app-mode";
 import "./globals.css";
@@ -31,18 +32,24 @@ export default async function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full bg-background-app text-foreground">
-        {shellUser ? (
-          <AppShell
-            shellUser={shellUser}
-            showSignOut={getAuthMode() === "supabase"}
-          >
-            {children}
-          </AppShell>
-        ) : (
-          children
-        )}
+      <body
+        className="min-h-full bg-background-app text-foreground"
+        suppressHydrationWarning
+      >
+        <ToastProvider>
+          {shellUser ? (
+            <AppShell
+              shellUser={shellUser}
+              showSignOut={getAuthMode() === "supabase"}
+            >
+              {children}
+            </AppShell>
+          ) : (
+            children
+          )}
+        </ToastProvider>
       </body>
     </html>
   );

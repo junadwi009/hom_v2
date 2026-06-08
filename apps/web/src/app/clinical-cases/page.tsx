@@ -1,13 +1,26 @@
-import { ModuleMockPage } from "@/features/module-page/module-mock-page";
-import { modulePages } from "@/lib/mock-data";
+import { ClinicalCasesPage } from "@/features/clinical-cases/clinical-cases-page";
+import { createClinicalCaseAction } from "@/features/clinical-cases/create-clinical-case-action";
+import { loadClinicalCasesData } from "@/features/clinical-cases/clinical-cases-loader";
+import { getCurrentUser } from "@/lib/auth/current-user";
 
-export default function ClinicalCasesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function Page() {
+  const [data, currentUser] = await Promise.all([
+    loadClinicalCasesData(),
+    getCurrentUser().catch(() => null),
+  ]);
+
+  const canCreate = Boolean(
+    currentUser?.permissions.includes("can_manage_clinical_cases"),
+  );
+
   return (
-    <ModuleMockPage
-      {...modulePages.approvals}
-      eyebrow="Clinical"
-      title="Chronic Case Registry"
-      description="Mock restricted registry shell. Clinical detail access, audit logs, and note workflows are deferred."
+    <ClinicalCasesPage
+      canCreate={canCreate}
+      cases={data.cases}
+      clients={data.clients}
+      createAction={createClinicalCaseAction}
     />
   );
 }

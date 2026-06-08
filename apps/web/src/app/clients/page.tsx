@@ -1,11 +1,25 @@
-import { getClientDetailAction } from "@/features/catalog/clients/client-detail-action";
-import { ClientsCatalogPage } from "@/features/catalog/clients/clients-catalog-page";
-import { loadClientsCatalogPage } from "@/features/catalog/clients/clients-page-loader";
+import { ClientManagementPage } from "@/features/clients/management/client-management-page";
+import { createClientAction } from "@/features/clients/management/create-client-action";
+import { loadRealManagedClients } from "@/features/clients/management/managed-clients-loader";
+import { getCurrentUser } from "@/lib/auth/current-user";
 
 export const dynamic = "force-dynamic";
 
 export default async function ClientsPage() {
-  const state = await loadClientsCatalogPage();
+  const [realClients, currentUser] = await Promise.all([
+    loadRealManagedClients(),
+    getCurrentUser().catch(() => null),
+  ]);
 
-  return <ClientsCatalogPage detailAction={getClientDetailAction} state={state} />;
+  const canCreate = Boolean(
+    currentUser?.permissions.includes("can_manage_clients"),
+  );
+
+  return (
+    <ClientManagementPage
+      canCreate={canCreate}
+      createAction={createClientAction}
+      realClients={realClients}
+    />
+  );
 }

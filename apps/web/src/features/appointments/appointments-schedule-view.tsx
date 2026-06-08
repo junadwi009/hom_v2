@@ -6,7 +6,10 @@ import { useSyncExternalStore } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { cn } from "@/lib/utils";
 
-import { AppointmentsCalendar } from "./appointments-calendar";
+import {
+  AppointmentsCalendar,
+  type CalendarActions,
+} from "./appointments-calendar";
 import type { AppointmentTableRow } from "./appointments-page-state";
 
 type AppointmentsViewMode = "calendar" | "list";
@@ -48,9 +51,13 @@ function setMode(next: AppointmentsViewMode) {
 export function AppointmentsScheduleView({
   events,
   listSlot,
+  calendarActions,
+  canManage = false,
 }: {
   events: AppointmentTableRow[];
   listSlot: ReactNode;
+  calendarActions?: CalendarActions;
+  canManage?: boolean;
 }) {
   const mode = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
@@ -78,7 +85,11 @@ export function AppointmentsScheduleView({
             title="Appointments"
             description="Jadwal janji temu dalam tampilan kalender bulanan."
           />
-          <AppointmentsCalendar events={events} />
+          <AppointmentsCalendar
+            actions={calendarActions}
+            canManage={canManage}
+            events={events}
+          />
         </>
       ) : (
         listSlot

@@ -1,6 +1,8 @@
-import { ModuleMockPage } from "@/features/module-page/module-mock-page";
-import { modulePages } from "@/lib/mock-data";
+import { redirect } from "next/navigation";
 
-export default function AiBusinessAgentPage() {
-  return <ModuleMockPage {...modulePages.aiAgent} />;
+export const dynamic = "force-dynamic";
+
+// Moved under Settings → AI Management.
+export default function AiBusinessAgentRedirect() {
+  redirect("/settings/ai-management/business-agent");
 }
