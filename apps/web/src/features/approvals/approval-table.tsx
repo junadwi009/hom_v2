@@ -97,17 +97,26 @@ export function ApprovalTable({
                   {formatDurationID(req.waitingHours)}
                 </td>
                 <td className="px-3 py-3 text-right">
-                  <span
+                  {/* Real button so keyboard users can Tab to a row and open it
+                      with Enter/Space; the row onClick stays for mouse users. */}
+                  <button
+                    aria-label={`Lihat detail ${req.title}`}
+                    aria-pressed={active}
                     className={cn(
                       "inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium",
                       active
                         ? "border-accent-gold bg-accent-gold-muted/60 text-amber-900"
                         : "text-foreground-muted",
                     )}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onSelect(req.id);
+                    }}
+                    type="button"
                   >
                     Detail
                     <ChevronRight aria-hidden="true" className="size-3.5" />
-                  </span>
+                  </button>
                 </td>
               </tr>
             );
