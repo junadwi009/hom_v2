@@ -57,7 +57,7 @@ type ApprovalRuleRpcRow = {
   is_active: boolean;
 };
 
-type ApprovalQueryClient = {
+export type ApprovalQueryClient = {
   rpc(
     fn: "list_approval_requests",
     params: { p_limit?: number; p_status?: string | null; p_domain?: string | null },
@@ -173,36 +173,47 @@ function mapRowToApprovalRule(row: ApprovalRuleRpcRow): ApprovalRule {
   };
 }
 
-// Loads real approval requests from Supabase. Returns [] on any failure so the
-// page can render an empty state rather than crash.
-export async function fetchApprovalRequests(): Promise<ApprovalRequest[]> {
+type ApprovalQueryOptions = {
+  client?: ApprovalQueryClient;
+};
+
+// Loads real approval requests from Supabase. Distinguishes "no requests yet"
+// ([]) from "could not load" (null) so the page can render an honest error
+// state instead of a misleading empty worklist.
+export async function fetchApprovalRequests(
+  options: ApprovalQueryOptions = {},
+): Promise<ApprovalRequest[] | null> {
   try {
     const supabase =
-      (await createSupabaseServerClient()) as unknown as ApprovalQueryClient;
+      options.client ??
+      ((await createSupabaseServerClient()) as unknown as ApprovalQueryClient);
     const { data, error } = await supabase.rpc("list_approval_requests", {
       p_limit: 200,
       p_status: null,
       p_domain: null,
     });
     if (error || !data) {
-      return [];
+      return null;
     }
     return data.map(mapRowToApprovalRequest);
   } catch {
-    return [];
+    return null;
   }
 }
 
-export async function fetchApprovalRules(): Promise<ApprovalRule[]> {
+export async function fetchApprovalRules(
+  options: ApprovalQueryOptions = {},
+): Promise<ApprovalRule[] | null> {
   try {
     const supabase =
-      (await createSupabaseServerClient()) as unknown as ApprovalQueryClient;
+      options.client ??
+      ((await createSupabaseServerClient()) as unknown as ApprovalQueryClient);
     const { data, error } = await supabase.rpc("list_approval_rules");
     if (error || !data) {
-      return [];
+      return null;
     }
     return data.map(mapRowToApprovalRule);
   } catch {
-    return [];
+    return null;
   }
 }

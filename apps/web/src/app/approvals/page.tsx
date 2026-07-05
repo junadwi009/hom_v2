@@ -50,6 +50,30 @@ export default async function Page({
     );
   }
 
+  // Honest error state: never render an empty worklist / zero KPIs when the
+  // request list simply failed to load.
+  if (data.loadFailed) {
+    return (
+      <>
+        <PageHeader
+          eyebrow="Governance"
+          title="Approval Center"
+          description="Kelola semua permintaan persetujuan lintas modul."
+          actions={<Badge tone="warning">Gangguan data</Badge>}
+        />
+        <DashboardCard
+          title="Data approval tidak dapat dimuat"
+          description="Terjadi gangguan saat mengambil daftar request."
+        >
+          <p className="text-sm leading-6 text-foreground-muted">
+            Muat ulang halaman ini. Bila masalah berlanjut, hubungi administrator
+            studio.
+          </p>
+        </DashboardCard>
+      </>
+    );
+  }
+
   return (
     <ApprovalsPage
       currentUser={currentUser}

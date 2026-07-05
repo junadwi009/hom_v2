@@ -16,6 +16,9 @@ export type ApprovalCenterData = {
   source: ApprovalDataSource;
   requests: ApprovalRequest[];
   rules: ApprovalRule[];
+  // True when the request list could not be loaded (network/RPC failure).
+  // The page must show an error state, not an empty worklist / zero KPIs.
+  loadFailed: boolean;
 };
 
 // Loads the Approval Center data. In Supabase data mode it reads real, persisted
@@ -23,11 +26,16 @@ export type ApprovalCenterData = {
 // back to the labeled local seed.
 export async function loadApprovalCenterData(): Promise<ApprovalCenterData> {
   if (getDataMode() !== "supabase") {
-    return { source: "mock", requests: [], rules: [] };
+    return { source: "mock", requests: [], rules: [], loadFailed: false };
   }
   const [requests, rules] = await Promise.all([
     fetchApprovalRequests(),
     fetchApprovalRules(),
   ]);
-  return { source: "supabase", requests, rules };
+  return {
+    source: "supabase",
+    requests: requests ?? [],
+    rules: rules ?? [],
+    loadFailed: requests === null,
+  };
 }
