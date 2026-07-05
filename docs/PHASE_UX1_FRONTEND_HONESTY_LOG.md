@@ -100,6 +100,22 @@ Verifikasi C1-b:
 - Catatan alat: `.next` sempat korup (validator.ts) karena dev server e2e terbunuh
   paruh jalan → typecheck gagal palsu; solusi hapus `apps/web/.next` (cache).
 
+## Lanjutan: perbaikan spec e2e basi + a11y tabel approval (disetujui owner)
+
+- `tests/e2e/app-shell.spec.ts` — heading kanonik ditetapkan owner:
+  `/clients` → "Client Management", `/financials` → "Financial Overview".
+  Spec klien ditulis ulang sesuai halaman sekarang (seed roster mode mock,
+  tanpa kolom kontak mentah). Hasil: **suite mock 30/30 hijau** (sebelumnya
+  27 pass / 3 stale fail). Tetap butuh override env
+  `HOM_AUTH_MODE=mock HOM_DATA_MODE=mock` di mesin dev (lihat bagian bukti).
+- `features/approvals/approval-table.tsx` — kontrol "Detail" per baris kini
+  `<button>` asli (`aria-label` per request, `aria-pressed` baris aktif) →
+  keyboard user bisa Tab + Enter membuka request; klik baris tetap untuk mouse.
+  Focus ring ikut aturan global `button { outline-color: var(--ring) }`.
+- Verifikasi: typecheck ✅ · lint ✅ · vitest 123+239 ✅ · **e2e 30 pass / 5 skip** ✅.
+- Catatan alat: dua `next dev` pada folder sama bentrok (`.next` lock) — matikan
+  dev server :3000 sebelum menjalankan e2e (webServer playwright :3100).
+
 ## Caveat
 - Perubahan `clients-catalog-page.tsx` saat ini hanya berefek ke Storybook
   (komponen tidak dipasang di rute mana pun) — tetap dipertahankan agar konsisten
