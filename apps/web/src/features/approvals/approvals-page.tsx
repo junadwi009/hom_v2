@@ -229,7 +229,7 @@ export function ApprovalsPage({
     { icon: Wallet, label: "Financial Impact", value: formatCompactIDR(kpis.financialImpact), helper: "total nominal aktif", accent: "info" },
     { icon: Stethoscope, label: "Clinical Review", value: String(kpis.clinicalReview), helper: "butuh review klinis", accent: "danger" },
     { icon: Clock, label: "Overdue", value: String(kpis.overdue), helper: ">24 jam menunggu", accent: kpis.overdue > 0 ? "danger" : "default" },
-    { icon: ClipboardList, label: "Approved", value: String(kpis.approvedThisMonth), helper: "disetujui (mock)", accent: "success" },
+    { icon: ClipboardList, label: "Approved", value: String(kpis.approvedThisMonth), helper: "total disetujui", accent: "success" },
   ];
 
   return (
@@ -243,10 +243,10 @@ export function ApprovalsPage({
             <Button onClick={() => setShowRules(true)} size="sm" type="button" variant="secondary">
               <ScrollText aria-hidden="true" className="size-4" /> Approval Rules
             </Button>
-            <Button onClick={() => notify("Export approval queue (mock).")} size="sm" type="button" variant="secondary">
+            <Button onClick={() => notify("Ekspor antrean persetujuan belum tersedia.")} size="sm" type="button" variant="secondary">
               <Download aria-hidden="true" className="size-4" /> Export
             </Button>
-            <Button onClick={() => notify("Pembuatan request manual menyusul (mock).")} size="sm" type="button">
+            <Button onClick={() => notify("Pembuatan request manual segera hadir.")} size="sm" type="button">
               Create Request
             </Button>
           </div>
