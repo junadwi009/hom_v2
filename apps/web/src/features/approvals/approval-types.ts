@@ -16,6 +16,7 @@ export type ApprovalStatus =
   | "draft"
   | "pending"
   | "need_more_info"
+  | "awaiting_second_approval"
   | "approved"
   | "rejected"
   | "cancelled"

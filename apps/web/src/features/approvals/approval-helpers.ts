@@ -15,6 +15,7 @@ export const STATUS_LABELS: Record<ApprovalStatus, string> = {
   draft: "Draft",
   pending: "Menunggu",
   need_more_info: "Butuh Info",
+  awaiting_second_approval: "Menunggu Approval Kedua",
   approved: "Disetujui",
   rejected: "Ditolak",
   cancelled: "Dibatalkan",
@@ -27,6 +28,7 @@ const STATUS_TONES: Record<ApprovalStatus, BadgeTone> = {
   draft: "neutral",
   pending: "warning",
   need_more_info: "info",
+  awaiting_second_approval: "info",
   approved: "success",
   rejected: "danger",
   cancelled: "neutral",
@@ -76,6 +78,7 @@ export function getRiskBadgeTone(risk: RiskLevel): BadgeTone {
 export const ACTIVE_STATUSES: ApprovalStatus[] = [
   "pending",
   "need_more_info",
+  "awaiting_second_approval",
   "escalated",
 ];
 export function isActiveStatus(status: ApprovalStatus): boolean {

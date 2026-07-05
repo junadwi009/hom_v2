@@ -18,6 +18,7 @@ const knownErrorCodes = [
   "SECOND_APPROVAL_REQUIRED_APPROVE",
   "SECOND_APPROVAL_REQUIRED_REJECT",
   "SECOND_APPROVAL_INVALID_APPROVER",
+  "SECOND_APPROVAL_SAME_APPROVER",
 ] as const;
 
 export type ApprovalMutationErrorCode =

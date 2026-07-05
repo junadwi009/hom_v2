@@ -147,6 +147,12 @@ function mapError(error: unknown): ApprovalActionResult {
           status: "permission_denied",
           message: "Approver kedua harus berbeda dari pengaju request.",
         };
+      case "SECOND_APPROVAL_SAME_APPROVER":
+        return {
+          status: "permission_denied",
+          message:
+            "Approval kedua harus dilakukan orang yang berbeda dari approver pertama.",
+        };
       default:
         return { status: "unknown_error", message: "Aksi approval gagal. Coba lagi." };
     }
