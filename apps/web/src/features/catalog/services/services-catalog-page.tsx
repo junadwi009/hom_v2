@@ -28,32 +28,31 @@ export function ServicesCatalogPage({ state }: { state: ServicesPageState }) {
 }
 
 function ServicesSummary({ state }: { state: ServicesPageState }) {
-  const loadedValue =
-    state.status === "ready" ? String(state.total) : "Unavailable";
-  const visibleValue =
-    state.status === "ready" ? String(state.rows.length) : "Unavailable";
+  const ready = state.status === "ready";
+  const rows = ready ? state.rows : [];
+  const totalActive = rows.filter((row) => row.status === "active").length;
 
   return (
     <section className="grid gap-4 md:grid-cols-3">
       <MetricCard
-        label="Loaded services"
-        value={loadedValue}
-        helper="repository result"
-        trend={state.status === "ready" ? "read-only" : "not loaded"}
-        tone={state.status === "ready" ? "success" : "warning"}
+        label="Total Layanan"
+        value={ready ? String(state.total) : "—"}
+        helper="Seluruh layanan studio"
+        trend={ready ? "katalog" : "—"}
+        tone={ready ? "info" : "neutral"}
       />
       <MetricCard
-        label="Visible rows"
-        value={visibleValue}
-        helper="current page"
-        trend={state.status === "ready" ? "page 1" : "paused"}
-        tone={state.status === "ready" ? "info" : "warning"}
+        label="Layanan Aktif"
+        value={ready ? String(totalActive) : "—"}
+        helper="Bisa dibooking"
+        trend={ready ? "aktif" : "—"}
+        tone={ready ? "success" : "neutral"}
       />
       <MetricCard
-        label="Roster source"
-        value={state.source}
-        helper="local workspace"
-        trend="safe"
+        label="Ditampilkan"
+        value={ready ? String(rows.length) : "—"}
+        helper="Baris di halaman ini"
+        trend={ready ? "halaman ini" : "—"}
         tone="neutral"
       />
     </section>
@@ -68,8 +67,8 @@ function ServicesContent({ state }: { state: ServicesPageState }) {
   if (state.status === "empty") {
     return (
       <EmptyState
-        title="No services available"
-        description="The read-only catalog returned no services for this page."
+        title="Belum ada layanan"
+        description="Belum ada layanan terdaftar untuk ditampilkan."
       />
     );
   }

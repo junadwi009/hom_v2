@@ -35,31 +35,31 @@ export function ClientsCatalogPage({
 }
 
 function ClientsSummary({ state }: { state: ClientsPageState }) {
-  const loadedValue = state.status === "ready" ? String(state.total) : "Unavailable";
-  const visibleValue =
-    state.status === "ready" ? String(state.rows.length) : "Unavailable";
+  const ready = state.status === "ready";
+  const rows = ready ? state.rows : [];
+  const totalActive = rows.filter((row) => row.status === "active").length;
 
   return (
     <section className="grid gap-4 md:grid-cols-3">
       <MetricCard
-        label="Loaded clients"
-        value={loadedValue}
-        helper="repository result"
-        trend={state.status === "ready" ? "read-only" : "not loaded"}
-        tone={state.status === "ready" ? "success" : "warning"}
+        label="Total Klien"
+        value={ready ? String(state.total) : "—"}
+        helper="Seluruh klien terdaftar"
+        trend={ready ? "terdaftar" : "—"}
+        tone={ready ? "info" : "neutral"}
       />
       <MetricCard
-        label="Visible rows"
-        value={visibleValue}
-        helper="current page"
-        trend={state.status === "ready" ? "page 1" : "paused"}
-        tone={state.status === "ready" ? "info" : "warning"}
+        label="Klien Aktif"
+        value={ready ? String(totalActive) : "—"}
+        helper="Berstatus aktif"
+        trend={ready ? "aktif" : "—"}
+        tone={ready ? "success" : "neutral"}
       />
       <MetricCard
-        label="Roster source"
-        value={state.source}
-        helper="local workspace"
-        trend="safe"
+        label="Ditampilkan"
+        value={ready ? String(rows.length) : "—"}
+        helper="Baris di halaman ini"
+        trend={ready ? "halaman ini" : "—"}
         tone="neutral"
       />
     </section>
@@ -80,8 +80,8 @@ function ClientsContent({
   if (state.status === "empty") {
     return (
       <EmptyState
-        title="No clients available"
-        description="The read-only catalog returned no clients for this page."
+        title="Belum ada klien"
+        description="Belum ada klien terdaftar untuk ditampilkan."
       />
     );
   }
