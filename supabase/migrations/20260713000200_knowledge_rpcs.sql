@@ -99,6 +99,8 @@ begin
 
   delete from public.knowledge_chunks where source_id=p_id;
   for v_chunk in select * from jsonb_array_elements(p_chunks) loop
+    if v_chunk->>'content' is null or v_chunk->>'index' is null or v_chunk->>'embedding' is null then
+      raise exception using errcode='P0001', message='CHUNK_INVALID'; end if;
     insert into public.knowledge_chunks (source_id, chunk_index, content, embedding, token_count)
     values (
       p_id,
@@ -122,8 +124,11 @@ create or replace function public.match_knowledge_chunks(
   p_query_embedding extensions.vector, p_scopes text[], p_match_count int
 ) returns table(source_id uuid, source_title text, chunk_index int, content text, distance float)
 language plpgsql security definer set search_path = public, extensions, private as $$
+declare v_actor public.app_users;
 begin
   if auth.uid() is null then raise exception using errcode='P0001', message='AUTH_REQUIRED'; end if;
+  select * into v_actor from public.app_users where auth_user_id = auth.uid() and status='active' limit 1;
+  if v_actor.id is null then raise exception using errcode='P0001', message='APP_USER_REQUIRED'; end if;
   if not (private.has_permission('can_manage_knowledge') or private.has_owner_role()) then
     raise exception using errcode='P0001', message='PERMISSION_DENIED'; end if;
 
