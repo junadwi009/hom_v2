@@ -121,7 +121,7 @@ end $$;
 create or replace function public.match_knowledge_chunks(
   p_query_embedding extensions.vector, p_scopes text[], p_match_count int
 ) returns table(source_id uuid, source_title text, chunk_index int, content text, distance float)
-language plpgsql security definer set search_path = public, private as $$
+language plpgsql security definer set search_path = public, extensions, private as $$
 begin
   if auth.uid() is null then raise exception using errcode='P0001', message='AUTH_REQUIRED'; end if;
   if not (private.has_permission('can_manage_knowledge') or private.has_owner_role()) then
