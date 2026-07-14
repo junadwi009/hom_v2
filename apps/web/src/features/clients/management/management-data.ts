@@ -121,5 +121,4 @@ export const managedClients: ManagedClient[] = [
 
 export const managementFilters = [
   { label: "Status", options: ["Semua", "Active", "Trial", "Dormant"] },
-  { label: "Tag", options: ["Semua", "Beginner", "VIP", "At-Risk"] },
 ];
