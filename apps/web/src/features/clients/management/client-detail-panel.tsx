@@ -82,7 +82,7 @@ export function ClientDetailView({
 
   return (
     <div className="flex flex-col gap-4">
-      <ClientTabs onChange={setActiveTab} tabs={TABS} />
+      <ClientTabs onChange={setActiveTab} tabs={TABS} initialActive={initialTab} />
 
       {state === "loading" ? (
         <DetailSkeleton />

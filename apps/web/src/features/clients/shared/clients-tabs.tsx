@@ -7,11 +7,13 @@ import { cn } from "@/lib/utils";
 export function ClientTabs({
   tabs,
   onChange,
+  initialActive = 0,
 }: {
   tabs: string[];
   onChange?: (index: number) => void;
+  initialActive?: number;
 }) {
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(initialActive);
 
   return (
     <div className="flex gap-6 overflow-x-auto overflow-y-hidden border-b">
