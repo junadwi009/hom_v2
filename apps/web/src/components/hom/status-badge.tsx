@@ -18,6 +18,8 @@ const statusTone: Record<string, "neutral" | "success" | "warning" | "danger" | 
   inactive: "neutral",
   prospect: "info",
   archived: "neutral",
+  expired: "danger",
+  depleted: "warning",
 };
 
 export function StatusBadge({ status }: { status: string }) {

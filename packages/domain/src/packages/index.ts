@@ -23,6 +23,7 @@ export {
   mockPackages,
   mockPackageUsageHistory,
 } from "./mock-repository";
+export { deriveClientPackageStatus } from "./status";
 export type {
   ClientPackageRepository,
   PackageRepository,
