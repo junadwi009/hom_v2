@@ -3,24 +3,12 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-import type {
-  ClientStatus,
-  ManagedClient,
-  RiskLevel,
-} from "./management-data";
+import type { ClientStatus, ManagedClient } from "./management-data";
 
 const statusTone: Record<ClientStatus, "success" | "danger" | "info" | "warning" | "neutral"> = {
   Active: "success",
-  "At-Risk": "danger",
   Trial: "info",
-  "Expiring Soon": "warning",
   Dormant: "neutral",
-};
-
-const riskTone: Record<RiskLevel, "danger" | "warning" | "success"> = {
-  High: "danger",
-  Medium: "warning",
-  Low: "success",
 };
 
 export function ClientTable({
@@ -39,11 +27,6 @@ export function ClientTable({
           <tr>
             <th className="border-b px-3 py-2 font-semibold">Client</th>
             <th className="border-b px-3 py-2 font-semibold">Status</th>
-            <th className="border-b px-3 py-2 font-semibold">Membership / Package</th>
-            <th className="border-b px-3 py-2 font-semibold">Last Visit</th>
-            <th className="border-b px-3 py-2 font-semibold">Next Booking</th>
-            <th className="border-b px-3 py-2 font-semibold">Risk</th>
-            <th className="border-b px-3 py-2 font-semibold">Total Spend</th>
           </tr>
         </thead>
         <tbody>
@@ -72,20 +55,6 @@ export function ClientTable({
               </td>
               <td className="px-3 py-3">
                 <Badge tone={statusTone[client.status]}>{client.status}</Badge>
-              </td>
-              <td className="px-3 py-3">
-                <p className="text-foreground">{client.membershipName}</p>
-                <p className="text-xs text-foreground-muted">{client.membershipDetail}</p>
-              </td>
-              <td className="px-3 py-3 text-foreground-muted">{client.lastVisit}</td>
-              <td className="px-3 py-3 text-foreground-muted">
-                {client.nextBooking ?? "—"}
-              </td>
-              <td className="px-3 py-3">
-                <Badge tone={riskTone[client.riskLevel]}>{client.riskLevel}</Badge>
-              </td>
-              <td className="px-3 py-3 font-medium text-foreground">
-                {client.totalSpend}
               </td>
             </tr>
           ))}

@@ -79,7 +79,6 @@ export function ClientManagementPage({
   );
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("Semua");
-  const [riskFilter, setRiskFilter] = useState("Semua");
   const selected =
     allClients.find((client) => client.id === selectedId) ?? allClients[0] ?? null;
 
@@ -90,19 +89,16 @@ export function ClientManagementPage({
       client.name.toLowerCase().includes(q) ||
       client.phone.toLowerCase().includes(q);
     const matchesStatus = statusFilter === "Semua" || client.status === statusFilter;
-    const matchesRisk = riskFilter === "Semua" || client.riskLevel === riskFilter;
-    return matchesQuery && matchesStatus && matchesRisk;
+    return matchesQuery && matchesStatus;
   });
 
   const handleFilterChange = (label: string, value: string) => {
     if (label === "Status") setStatusFilter(value);
-    if (label === "Risk Level") setRiskFilter(value);
   };
 
   const handleReset = () => {
     setQuery("");
     setStatusFilter("Semua");
-    setRiskFilter("Semua");
   };
 
   return (
@@ -174,7 +170,15 @@ export function ClientManagementPage({
 
         <div className="xl:col-span-1">
           {selected ? (
-            <ClientDetailPanel client={selected} />
+            <ClientDetailPanel
+              client={{
+                id: selected.id,
+                name: selected.name,
+                initials: selected.initials,
+                status: selected.status,
+                vip: selected.vip,
+              }}
+            />
           ) : (
             <section className="flex h-full min-h-40 items-center justify-center rounded-lg border bg-background-card p-5 text-sm text-foreground-muted shadow-[var(--shadow-soft)]">
               Pilih klien untuk melihat detail.

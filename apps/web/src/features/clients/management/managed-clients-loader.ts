@@ -13,8 +13,9 @@ const statusMap: Record<Client["status"], ClientStatus> = {
   archived: "Dormant",
 };
 
-// Loads real clients from Supabase and maps them to the rich ManagedClient shape
-// with neutral defaults (activity/health are not modeled yet). Newly created
+// Loads real clients from Supabase and maps them to the light ManagedClient
+// shape used by the list. Rich detail (membership/activity/spend) loads on
+// demand via the detail panel (see client-detail-loader.ts). Newly created
 // clients appear here after revalidation, proving the create pipeline persists.
 export async function loadRealManagedClients(): Promise<ManagedClient[]> {
   try {
@@ -33,35 +34,6 @@ function mapClientToManaged(client: Client): ManagedClient {
     phone: client.maskedPhone ?? "—",
     initials: toInitials(client.fullName),
     status: statusMap[client.status],
-    membershipName: "—",
-    membershipDetail: "Belum ada paket",
-    lastVisit: "—",
-    nextBooking: null,
-    riskLevel: "Low",
-    totalSpend: "Rp 0",
-    healthScore: 70,
-    riskReasons: ["Data aktivitas belum tersedia"],
-    membership: {
-      name: "—",
-      startLabel: "—",
-      expiryLabel: "Belum ada membership",
-      used: 0,
-      total: 1,
-      unit: "sesi",
-      active: false,
-    },
-    activity: {
-      lastVisit: "—",
-      lastClass: "—",
-      totalVisit: "0 kali",
-    },
-    spend: {
-      total: "Rp 0",
-      perMonth: "—",
-      lastPayment: "—",
-    },
-    aiRecommendation:
-      "Lengkapi profil & aktivitas client untuk mendapatkan insight personal.",
   };
 }
 
