@@ -5,10 +5,7 @@ import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import {
-  comingSoonNavigation,
-  operationalNavigation,
-} from "@/lib/routes";
+import { operationalNavigation } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 type NavLink = { label: string; href: string; icon?: LucideIcon };
@@ -78,26 +75,6 @@ export function SidebarNavigation({ collapsed = false }: { collapsed?: boolean }
           />
         ),
       )}
-
-      <div className="pt-3">
-        {collapsed ? (
-          <div className="mx-2 mb-2 border-t border-white/10" aria-hidden="true" />
-        ) : (
-          <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-normal text-[var(--sidebar-muted)] opacity-70">
-            Segera hadir
-          </p>
-        )}
-        <div className="space-y-1 opacity-70">
-          {(comingSoonNavigation as NavLink[]).map((item) => (
-            <NavLinkItem
-              collapsed={collapsed}
-              item={item}
-              key={item.href}
-              pathname={pathname}
-            />
-          ))}
-        </div>
-      </div>
     </nav>
   );
 }

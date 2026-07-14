@@ -4,7 +4,6 @@ import {
   CalendarDays,
   CheckCheck,
   CircleDollarSign,
-  MessageSquareText,
   Package,
   Settings,
   Stethoscope,
@@ -16,16 +15,7 @@ import {
 export const operationalNavigation = [
   { label: "Overview", href: "/", icon: Activity },
   { label: "Appointments", href: "/appointments", icon: CalendarDays },
-  {
-    label: "Clients",
-    icon: Users,
-    children: [
-      { label: "Client Management", href: "/clients" },
-      { label: "Leads", href: "/clients/leads" },
-      { label: "Segments", href: "/clients/segments" },
-      { label: "Tags", href: "/clients/tags" },
-    ],
-  },
+  { label: "Clients", href: "/clients", icon: Users },
   { label: "Practitioners", href: "/practitioners", icon: Stethoscope },
   { label: "Service & Paket", href: "/catalog", icon: Package },
   { label: "Client Packages", href: "/client-packages", icon: BadgeCheck },
@@ -50,30 +40,16 @@ export const operationalNavigation = [
         children: [
           { label: "AI Business Agent", href: "/settings/ai-management/business-agent" },
           { label: "Knowledge Studio", href: "/settings/ai-management/knowledge-studio" },
-          {
-            label: "Behavior Intelligence",
-            href: "/settings/ai-management/behavior-intelligence",
-          },
         ],
       },
     ],
   },
 ];
 
-// Modules whose backend is not built yet — shown muted under a "Coming soon" group.
-export const comingSoonNavigation = [
-  { label: "Live Chat", href: "/live-chat", icon: MessageSquareText },
-];
-
-export const primaryNavigation = [
-  ...operationalNavigation,
-  ...comingSoonNavigation,
-];
+export const primaryNavigation = [...operationalNavigation];
 
 export const executiveTabs = [
   { label: "Strategic Overview", href: "/dashboard/executive-command" },
-  { label: "Chronic Case Registry", href: "/clinical-cases" },
-  { label: "Team Attendance", href: "/team-attendance" },
   { label: "Financial Strategy", href: "/financials" },
   { label: "Client LTV & Milestones", href: "/clients" },
   { label: "User Management", href: "/settings/user-management" },
