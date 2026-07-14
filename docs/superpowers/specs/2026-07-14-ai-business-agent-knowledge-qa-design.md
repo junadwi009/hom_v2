@@ -1,7 +1,7 @@
 # AI Business Agent — Internal Knowledge Q&A (Sub-project 2a) — Design Spec
 
 - **Date:** 2026-07-14
-- **Status:** Approved for planning
+- **Status:** Implemented
 - **Author:** Claude (with owner)
 - **Builds on:** Sub-project 1 (RAG Knowledge Ingestion) — `docs/PHASE_RAG_1_KNOWLEDGE_INGESTION_LOG.md`, `docs/superpowers/specs/2026-07-13-rag-knowledge-ingestion-design.md`
 - **Design source of truth:** `docs/06_AI_KNOWLEDGE_STUDIO.md` (§7 RAG retrieval rules, §8 AI safety), `AGENTS.md`
@@ -123,3 +123,10 @@ The orchestrator passes exactly this set to `rpcMatch`, so retrieval can never s
 - **A2:** `can_use_ai_business_agent` exists in the DB permissions constraint + seed and is granted to appropriate roles (verify in planning; SP1 found the knowledge perms already seeded).
 - **A3:** single-turn per question (no server-side conversation memory) is acceptable for the MVP. *(confirmed)*
 - **Q1:** should the agent also expose a small "sources this scope set covers" hint? Deferred — not needed for MVP.
+
+## 13. Deviations (post-implementation)
+
+- **`owner_only` scope gated concretely by `can_publish_knowledge`** (resolves A1): the implementation uses `can_publish_knowledge` alone, not an OR with `can_manage_users`. This is the same permission SP1 uses to gate *publishing* owner-only-scoped knowledge, so retrieval and publish share one gate — simpler than the two-permission approximation sketched in §5, and no role in the current matrix holds `can_manage_users` without also holding `can_publish_knowledge`.
+- **Audit via the `record_ai_interaction` RPC**, exactly as designed in §6 — `SECURITY DEFINER`, gated to `can_use_ai_business_agent OR owner`, metadata excludes raw question/answer text.
+- **Match-gate widened** to add `can_use_ai_business_agent` to `match_knowledge_chunks`'s permission OR-gate, exactly as designed in §6 — additive, backward-compatible with SP1's Test Lab.
+- **Chat UI appends completed turns via React "adjust state during render,"** not a `useEffect` — `ai-business-agent-chat.tsx` compares the latest `useActionState` result to a tracked `processedState` and appends synchronously during render when it changes, avoiding an extra effect-triggered render pass.
