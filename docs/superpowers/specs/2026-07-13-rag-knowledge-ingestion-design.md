@@ -1,7 +1,7 @@
 # RAG Knowledge Ingestion MVP — Design Spec
 
 - **Date:** 2026-07-13
-- **Status:** Approved for planning (pending final user spec review)
+- **Status:** Implemented (Sub-project 1 — MVP; see `docs/PHASE_RAG_1_KNOWLEDGE_INGESTION_LOG.md`)
 - **Author:** Claude (with owner)
 - **Related design source of truth:** [`docs/06_AI_KNOWLEDGE_STUDIO.md`](../../06_AI_KNOWLEDGE_STUDIO.md)
 - **Working agreement:** [`AGENTS.md`](../../../AGENTS.md), [`CLAUDE.md`](../../../CLAUDE.md)
@@ -229,3 +229,12 @@ All UI uses shadcn/Radix + design tokens; restrained Motion with reduced-motion 
 - **A3:** Synchronous processing is acceptable for MVP file sizes; worker migration is a later sub-project. *(assume yes)*
 - **Q1:** AI Gateway as a new `packages/ai` package vs an `apps/web` lib module — decide in planning (lean lib for MVP, extract to package if reused).
 - **Q2:** HNSW vs ivfflat index — decide in planning per local pgvector version.
+
+## 14. Deviations from spec during implementation
+
+- **Server actions instead of REST route handlers.** §4.1 sketched `POST /api/knowledge/...` routes. The repo has no existing mutation route-handler pattern, so ingestion is implemented as Next.js `"use server"` actions (`upload-knowledge-action.ts`, `publish-knowledge-action.ts`, `query-knowledge-action.ts`) backed by pure `submit-*` orchestrators (`apps/web/src/lib/knowledge/server/submit-upload-knowledge-source.ts`, `submit-publish-knowledge-source.ts`, `submit-knowledge-query.ts`). The orchestrators still call the pure `packages/domain` use cases, so the "thin adapter over a pure use case" seam from §4.1 is preserved — only the transport changed.
+- **AI Gateway is an `apps/web/src/lib` module, not `packages/ai`.** Resolves open question Q1 in favor of the lib option: `apps/web/src/lib/ai/gateway/{index,config,types,openai-adapter,mock-adapter}.ts`. No second workspace package was justified for MVP; extraction to `packages/ai` remains an option if the gateway is reused outside `apps/web`.
+- **`createSupabaseServerClient` and the repository factory are async.** The existing Supabase server-client helper returns a Promise (it reads cookies via `next/headers`), so `apps/web/src/lib/knowledge/repository-factory.ts` and all callers (`getKnowledgeRepository()`) are `async` and must be awaited — this wasn't spelled out in §4/§5.
+- **Storage upload uses the service-role admin client.** File upload to the private Storage bucket in `submit-upload-knowledge-source.ts` goes through the Supabase admin (service-role) client server-side, not the anon/user client, so RLS-equivalent checks are enforced in the use case/RBAC layer before the upload call rather than relying on Storage-level RLS alone.
+- **`match_knowledge_chunks` needed `extensions` in its `search_path`.** The pgvector `<=>` operator lives in the `extensions` schema in this Supabase setup; the RPC's `SECURITY DEFINER search_path` had to include `extensions` (alongside `public`) or the operator resolved to nothing. See migration `20260713000200_knowledge_rpcs.sql`.
+- **Query embedding is passed as a JSON string, not a native array.** Resolves open question in T11/T13: the RPC parameter for the query vector is passed as a JSON-stringified array (`JSON.stringify(embedding)`) and cast to `vector` inside SQL, rather than relying on the Postgres client to marshal a JS `number[]` directly — this was the reliable path with the driver in use.
