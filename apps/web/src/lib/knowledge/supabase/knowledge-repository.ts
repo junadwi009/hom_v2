@@ -8,6 +8,8 @@ import {
   type KnowledgeSourceListQuery,
 } from "@hom/domain/knowledge";
 
+import { KnowledgeRepositoryError } from "@/lib/knowledge/errors";
+
 import type { KnowledgeSourceRow, KnowledgeSupabaseClient } from "./types";
 
 const KNOWLEDGE_SOURCE_SELECT = "*";
@@ -21,14 +23,26 @@ export function createSupabaseKnowledgeRepository(
       const from = (parsedQuery.page - 1) * parsedQuery.pageSize;
       const to = from + parsedQuery.pageSize - 1;
 
-      const response = await client
+      let request = client
         .from("knowledge_sources")
-        .select(KNOWLEDGE_SOURCE_SELECT, { count: "exact" })
+        .select(KNOWLEDGE_SOURCE_SELECT, { count: "exact" });
+
+      if (parsedQuery.search) {
+        request = request.or(
+          `title.ilike.${toSearchPattern(parsedQuery.search)},doc_type.ilike.${toSearchPattern(parsedQuery.search)}`,
+        );
+      }
+
+      const response = await request
         .order("created_at", { ascending: false })
         .range(from, to);
 
       if (response.error) {
-        throw response.error;
+        throw KnowledgeRepositoryError.fromSupabase(
+          "knowledge.list",
+          "knowledge_sources",
+          response.error,
+        );
       }
 
       const rows = response.data ?? [];
@@ -49,12 +63,20 @@ export function createSupabaseKnowledgeRepository(
         .maybeSingle();
 
       if (response.error) {
-        throw response.error;
+        throw KnowledgeRepositoryError.fromSupabase(
+          "knowledge.getById",
+          "knowledge_sources",
+          response.error,
+        );
       }
 
       return response.data ? mapKnowledgeSourceRow(response.data) : null;
     },
   };
+}
+
+function toSearchPattern(value: string) {
+  return `%${value.replace(/[\\%_]/g, "\\$&")}%`;
 }
 
 function mapKnowledgeSourceRow(row: KnowledgeSourceRow) {

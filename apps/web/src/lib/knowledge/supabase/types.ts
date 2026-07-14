@@ -19,6 +19,8 @@ export type KnowledgeSupabaseSingleResponse<TRow> = {
 
 export type KnowledgeSupabaseFilterBuilder<TRow> = {
   eq(column: string, value: string): KnowledgeSupabaseFilterBuilder<TRow>;
+  ilike(column: string, pattern: string): KnowledgeSupabaseFilterBuilder<TRow>;
+  or(filters: string): KnowledgeSupabaseFilterBuilder<TRow>;
   order(
     column: string,
     options?: { ascending?: boolean },
