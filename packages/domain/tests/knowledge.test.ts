@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   createKnowledgeSourceInputSchema,
+  createMockKnowledgeRepository,
   knowledgeQueryInputSchema,
   knowledgeScopeSchema,
   knowledgeSourceSchema,
@@ -51,5 +52,20 @@ describe("knowledgeQueryInputSchema", () => {
     expect(() =>
       knowledgeQueryInputSchema.parse({ question: "Berapa harga private?", scope: "public_chatbot" }),
     ).not.toThrow();
+  });
+});
+
+describe("createMockKnowledgeRepository", () => {
+  it("exposes only list and getById", () => {
+    const repo = createMockKnowledgeRepository();
+    expect(Object.keys(repo).sort()).toEqual(["getById", "list"]);
+  });
+  it("returns seeded sources and finds by id", async () => {
+    const repo = createMockKnowledgeRepository();
+    const result = await repo.list();
+    expect(result.items.length).toBeGreaterThan(0);
+    const first = result.items[0];
+    expect(await repo.getById(first.id)).not.toBeNull();
+    expect(await repo.getById("00000000-0000-4000-8000-000000000000")).toBeNull();
   });
 });
