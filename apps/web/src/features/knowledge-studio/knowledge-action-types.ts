@@ -43,3 +43,26 @@ export type KnowledgePublishState =
 export const initialKnowledgePublishState: KnowledgePublishState = {
   status: "idle",
 };
+
+export type KnowledgeQueryState =
+  | { status: "idle" }
+  | {
+      status:
+        | "configuration_error"
+        | "auth_required"
+        | "permission_denied"
+        | "validation_error"
+        | "error";
+      message: string;
+    }
+  | {
+      status: "success";
+      answer: string;
+      sources: { title: string; snippet: string }[];
+      policyFlags: string[];
+      mode: "openai" | "mock";
+    };
+
+export const initialKnowledgeQueryState: KnowledgeQueryState = {
+  status: "idle",
+};
