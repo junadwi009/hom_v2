@@ -268,9 +268,6 @@ export function FinancialsPage({
         </p>
         <p className="mt-1.5 text-sm leading-6 text-foreground-muted">{insight}</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button onClick={() => notify("Tinjau kategori pengeluaran terbesar di bawah.")} size="sm" type="button" variant="secondary">
-            Review Expense
-          </Button>
           <Button disabled={!canExport} onClick={exportCsv} size="sm" type="button" variant="secondary">
             <Download aria-hidden="true" className="size-4" />
             Export Report
