@@ -1,9 +1,6 @@
 "use client";
 
-import { MoreVertical } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
-import { DemoIconButton } from "@/features/shell/demo-action";
 import { cn } from "@/lib/utils";
 
 import type { AuditLogView } from "./audit-logs-loader";
@@ -75,7 +72,6 @@ export function AuditLogTable({
             <th className="border-b px-3 py-2 font-semibold">Modul</th>
             <th className="border-b px-3 py-2 font-semibold">Risk</th>
             <th className="border-b px-3 py-2 font-semibold">IP Address</th>
-            <th className="border-b px-3 py-2 text-right font-semibold">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -115,20 +111,6 @@ export function AuditLogTable({
               </td>
               <td className="whitespace-nowrap px-3 py-3 text-foreground-muted">
                 {log.ipAddress ?? "—"}
-              </td>
-              <td className="px-3 py-3">
-                <div className="flex items-center justify-end">
-                  <DemoIconButton
-                    className="flex size-8 items-center justify-center rounded-md hover:bg-stone-100"
-                    label="Aksi log"
-                    message="Menu aksi log (demo)."
-                  >
-                    <MoreVertical
-                      aria-hidden="true"
-                      className="size-4 text-foreground-muted"
-                    />
-                  </DemoIconButton>
-                </div>
               </td>
             </tr>
           ))}

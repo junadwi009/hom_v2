@@ -1,9 +1,6 @@
 "use client";
 
-import { MoreVertical } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
-import { DemoIconButton } from "@/features/shell/demo-action";
 import { cn } from "@/lib/utils";
 
 import type { BranchView } from "./branches-loader";
@@ -53,7 +50,6 @@ export function BranchTable({
             <th className="border-b px-3 py-2 font-semibold">Manager</th>
             <th className="border-b px-3 py-2 font-semibold">Tipe</th>
             <th className="border-b px-3 py-2 font-semibold">Status</th>
-            <th className="border-b px-3 py-2 text-right font-semibold">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -99,20 +95,6 @@ export function BranchTable({
               </td>
               <td className="px-3 py-3">
                 <Badge tone={statusTone[branch.status]}>{branch.status}</Badge>
-              </td>
-              <td className="px-3 py-3">
-                <div className="flex items-center justify-end">
-                  <DemoIconButton
-                    className="flex size-8 items-center justify-center rounded-md hover:bg-stone-100"
-                    label="Aksi cabang"
-                    message={`Menu aksi untuk ${branch.name} (demo).`}
-                  >
-                    <MoreVertical
-                      aria-hidden="true"
-                      className="size-4 text-foreground-muted"
-                    />
-                  </DemoIconButton>
-                </div>
               </td>
             </tr>
           ))}

@@ -3,7 +3,6 @@
 import { ScrollText } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { DemoButton } from "@/features/shell/demo-action";
 
 import type { AuditLogView } from "./audit-logs-loader";
 import { actionTone, formatTimestamp } from "./audit-log-table";
@@ -71,27 +70,6 @@ export function AuditLogDetailPanel({ log }: { log: AuditLogView | null }) {
         <pre className="mt-2 max-h-56 overflow-auto rounded-md border bg-background p-3 text-[11px] leading-5 text-foreground">
           {metadataText}
         </pre>
-      </div>
-
-      <div className="flex gap-2">
-        <DemoButton
-          className="flex-1"
-          message="Log sebelumnya (demo)."
-          size="sm"
-          type="button"
-          variant="secondary"
-        >
-          Sebelumnya
-        </DemoButton>
-        <DemoButton
-          className="flex-1"
-          message="Log selanjutnya (demo)."
-          size="sm"
-          type="button"
-          variant="secondary"
-        >
-          Selanjutnya
-        </DemoButton>
       </div>
     </section>
   );

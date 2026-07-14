@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { DemoButton } from "@/features/shell/demo-action";
 
 import { ClientTabs } from "@/features/clients/shared/clients-tabs";
 
@@ -112,26 +111,6 @@ export function BranchDetailPanel({ branch }: { branch: BranchView | null }) {
             </span>
           ))}
         </div>
-      </div>
-
-      <div className="flex gap-2">
-        <DemoButton
-          className="flex-1"
-          message={`Edit cabang ${branch.name} (demo).`}
-          size="sm"
-          type="button"
-          variant="secondary"
-        >
-          Edit Branch
-        </DemoButton>
-        <DemoButton
-          className="flex-1"
-          message={`Membuka laporan cabang ${branch.name} (demo).`}
-          size="sm"
-          type="button"
-        >
-          Lihat Laporan
-        </DemoButton>
       </div>
     </section>
   );

@@ -1,11 +1,10 @@
 "use client";
 
 import type { AdminUser } from "@hom/domain/users";
-import { KeyRound, MoreHorizontal, ShieldOff, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 
 import { StatusBadge } from "@/components/hom/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { DemoButton, DemoLink } from "@/features/shell/demo-action";
 import { ClientTabs } from "@/features/clients/shared/clients-tabs";
 
 import { formatRoleName } from "./role-options";
@@ -70,39 +69,6 @@ export function UserDetailPanel({ user }: { user: AdminUser | null }) {
         <p className="mt-2 text-xs text-foreground-muted">
           Akses per-cabang belum dimodelkan untuk user.
         </p>
-      </div>
-
-      <div className="space-y-2">
-        <p className="text-sm font-semibold text-foreground">Aksi Cepat</p>
-        <div className="flex gap-2">
-          <DemoButton
-            className="flex-1"
-            message={`Reset password ${user.fullName} (demo).`}
-            size="sm"
-            type="button"
-            variant="secondary"
-          >
-            <KeyRound aria-hidden="true" className="size-4" />
-            Reset Password
-          </DemoButton>
-          <DemoButton
-            className="flex-1"
-            message={`Nonaktifkan ${user.fullName} (demo). Gunakan tombol Status di tabel untuk aksi nyata.`}
-            size="sm"
-            type="button"
-            variant="secondary"
-          >
-            <ShieldOff aria-hidden="true" className="size-4" />
-            Nonaktifkan
-          </DemoButton>
-        </div>
-        <DemoLink
-          className="flex items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium text-foreground-muted hover:bg-stone-100 hover:text-foreground"
-          message={`Membuka aktivitas ${user.fullName} (demo).`}
-        >
-          <MoreHorizontal aria-hidden="true" className="size-4" />
-          Lihat Semua Aktivitas
-        </DemoLink>
       </div>
     </section>
   );
