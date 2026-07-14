@@ -14,13 +14,13 @@ This log is written for a beginner solo dev: what got built, in plain language, 
   - `knowledge_chunks` — chunked + embedded text (`embedding vector(1536)`), one-to-many with `knowledge_sources`.
   - Row Level Security on both tables (owner-only: `studio_director` + `super_admin`), a private Storage bucket for the raw files, and audit-log wiring.
 - `supabase/migrations/20260713000200_knowledge_rpcs.sql`
-  - `create_knowledge_source`, `update_knowledge_source_extraction`, `publish_knowledge_source` (writes chunks + audit rows), `match_knowledge_chunks` (pgvector cosine search via `<=>`, scope-filtered).
+  - `create_knowledge_source`, `set_knowledge_source_extracted`, `fail_knowledge_source`, `publish_knowledge_source` (writes chunks + audit rows), `match_knowledge_chunks` (pgvector cosine search via `<=>`, scope-filtered).
   - All RPCs are `SECURITY DEFINER`. `match_knowledge_chunks` needed `extensions` added to its `search_path` (the `<=>` operator lives in the `extensions` schema in this Supabase setup) — see spec §14 deviations.
 
 ### 2. Domain module (`packages/domain/src/knowledge/`)
 Framework-free, pure TypeScript — no Next.js, no HTTP — so a future background worker can reuse it unchanged:
 - `types.ts` / `schemas.ts` — `KnowledgeSource`, `KnowledgeChunk`, Zod schemas for every input.
-- `repository.ts` — the repository interface (create/update/publish/match), implemented twice: `mock-repository.ts` (in-memory, deterministic) and, on the web app side, a Supabase-backed implementation.
+- `repository.ts` — a **read-only** repository interface (`list` / `getById`), implemented twice: `mock-repository.ts` (in-memory, deterministic) and, on the web app side, a Supabase-backed implementation. All **writes** go through the `SECURITY DEFINER` RPCs (via `knowledge-rpcs.ts`), never the repository.
 - `chunk.ts` — text chunker (fixed-size with overlap) used before embedding.
 - `policy-guard.ts` — decides whether a Test Lab question is answerable given the retrieved sources (refuses instead of hallucinating when nothing relevant was found).
 
@@ -36,7 +36,7 @@ This was implemented as an `apps/web/src/lib` module rather than a new `packages
 ### 4. Extractors (`apps/web/src/lib/knowledge/extract/`)
 Per file type, rule-based first, LLM only where needed:
 - `spreadsheet.ts` — `.xlsx`/`.xls`/`.csv` → flattened text (no AI call needed).
-- `pdf.ts` — PDF text extraction, with vision fallback for scanned/image-only PDFs.
+- `pdf.ts` — PDF **text-layer** extraction (via `unpdf`). Scanned / image-only PDFs (little or no text layer) are detected and flagged with low confidence (`needsVision`), but routing them to the vision model is **not yet wired** — that OCR fallback is a documented follow-up (see below). Today a scanned PDF stores near-empty text at low confidence for the owner to catch in review.
 - `image.ts` — `.png`/`.jpg`/`.jpeg` → AI Gateway vision call (`extractImageText`).
 - `index.ts` — dispatches by MIME/extension to the right extractor.
 
@@ -71,9 +71,20 @@ Per file type, rule-based first, LLM only where needed:
 3. Optional: set `OPENAI_API_KEY` in `apps/web/.env.local` to use real embeddings + vision. If it's absent, the AI Gateway automatically falls back to the deterministic mock adapter — everything still works (uploads, extraction, publish, Test Lab), just with canned/hashed output instead of real model output.
 4. `corepack pnpm --dir apps/web dev` → open `/settings/ai-management/knowledge-studio` (or `/knowledge-studio`), log in as the seeded `studio_director`, upload a file, review, publish, then try a Test Lab question.
 
-## Known limitation
+## Known limitations
 
-Processing (extract → chunk → embed) runs **synchronously** inside the server action that handles the request, because there is no background worker yet (`apps/worker` + `event_outbox` are still docs-only in this repo). This means large multi-page PDFs or many images at once can approach serverless/function time limits. This is acceptable for MVP and local development. The domain use cases were written with no HTTP/Next.js coupling specifically so that a future `event_outbox`-driven worker can call the same functions with no logic changes — only the entry point moves from "inline in the request" to "picked up by a worker."
+- **Synchronous processing.** Processing (extract → chunk → embed) runs **synchronously** inside the server action that handles the request, because there is no background worker yet (`apps/worker` + `event_outbox` are still docs-only in this repo). This means large multi-page PDFs or many images at once can approach serverless/function time limits. This is acceptable for MVP and local development. The domain use cases were written with no HTTP/Next.js coupling specifically so that a future `event_outbox`-driven worker can call the same functions with no logic changes — only the entry point moves from "inline in the request" to "picked up by a worker."
+- **Don't switch embedding provider between publish and query.** Chunks are embedded at publish time and questions are embedded at query time. The mock adapter (no `OPENAI_API_KEY`) and the real OpenAI model produce vectors in **different embedding spaces**. If you publish a source in mock mode and then add `OPENAI_API_KEY` (or vice-versa), retrieval will silently return near-random matches with **no error**. If you change the key, **re-publish** existing sources so their chunks are re-embedded in the same space. (A future improvement is to persist the embedding model/mode per source and refuse cross-space matches.)
+
+## Known follow-ups (from the final whole-branch review — none block this MVP)
+
+- **PDF vision/OCR fallback:** wire scanned/image-only PDFs (flagged `needsVision`) through the vision model, as `docs/06` §6 intends.
+- **Storage orphan cleanup:** if `create_knowledge_source` fails *after* the file was uploaded, the blob is orphaned; add a best-effort `admin.storage.remove` on that failure path.
+- **Stricter publish chunk validation:** `publish_knowledge_source` rejects missing chunk fields but not malformed-but-present ones (e.g. a wrong-dimension embedding surfaces as a raw pg error mapped to the generic `KNOWLEDGE_RPC_FAILED` rather than a clean `P0001`).
+- **One MIME source of truth:** unify `SUPPORTED_MIME` and `extractByMime`'s dispatch (harmless today — uploads are gated on `SUPPORTED_MIME.has()` first).
+- **Sanitize `file.name`** before embedding it in the storage key.
+- **Orchestrator happy-path tests:** the upload/publish/query orchestrators are unit-tested only for the `configuration_error` gate; the embedding contract, chunk→embed→publish wiring, and policy-guard integration are covered indirectly (domain/gateway/repository unit tests, psql RPC verification, e2e smoke) but deserve DI-seam happy-path tests before Sub-project 2 builds on them.
+- **`owner_only` scope is not yet a customer ACL:** in the Test Lab, any `can_manage_knowledge` holder can retrieve `owner_only` chunks (consistent with table RLS — managers already read all sources). Scope must become a real, enforced customer-facing ACL in Sub-project 2.
 
 ## Out of scope (not built in this phase)
 
