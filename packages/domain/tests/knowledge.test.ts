@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  allowedKnowledgeScopes,
+  businessAgentQueryInputSchema,
   chunkText,
   createKnowledgeSourceInputSchema,
   createMockKnowledgeRepository,
@@ -115,5 +117,36 @@ describe("evaluateKnowledgeAnswer", () => {
     const r = evaluateKnowledgeAnswer({ answer: "anything", hasSources: false });
     expect(r.policyFlags).toContain("no_sources");
     expect(r.answer.toLowerCase()).toContain("belum ada");
+  });
+});
+
+describe("allowedKnowledgeScopes", () => {
+  it("always includes the 3 base scopes", () => {
+    const s = allowedKnowledgeScopes([]);
+    expect(s).toEqual(expect.arrayContaining(["public_chatbot", "internal_admin", "marketing"]));
+    expect(s).not.toContain("finance");
+    expect(s).not.toContain("clinical_safety");
+    expect(s).not.toContain("owner_only");
+  });
+  it("adds finance only with can_view_financials", () => {
+    expect(allowedKnowledgeScopes(["can_view_financials"])).toContain("finance");
+  });
+  it("adds clinical_safety only with can_view_clinical_cases", () => {
+    expect(allowedKnowledgeScopes(["can_view_clinical_cases"])).toContain("clinical_safety");
+  });
+  it("adds owner_only only with can_publish_knowledge", () => {
+    expect(allowedKnowledgeScopes(["can_publish_knowledge"])).toContain("owner_only");
+  });
+});
+
+describe("businessAgentQueryInputSchema", () => {
+  it("accepts a valid question", () => {
+    expect(() => businessAgentQueryInputSchema.parse({ question: "Berapa harga?" })).not.toThrow();
+  });
+  it("rejects a too-short question", () => {
+    expect(() => businessAgentQueryInputSchema.parse({ question: "hi" })).toThrow();
+  });
+  it("rejects unknown keys", () => {
+    expect(() => businessAgentQueryInputSchema.parse({ question: "valid question", extra: 1 })).toThrow();
   });
 });

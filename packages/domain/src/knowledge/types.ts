@@ -1,6 +1,7 @@
 import type { z } from "zod";
 
 import type {
+  businessAgentQueryInputSchema,
   createKnowledgeSourceInputSchema,
   knowledgeQueryInputSchema,
   knowledgeScopeSchema,
@@ -17,3 +18,4 @@ export type PublishKnowledgeSourceInput = z.infer<typeof publishKnowledgeSourceI
 export type KnowledgeQueryInput = z.infer<typeof knowledgeQueryInputSchema>;
 export type KnowledgeSourceListQuery = z.infer<typeof knowledgeSourceListQuerySchema>;
 export type KnowledgeSourceListResult = z.infer<typeof knowledgeSourceListResultSchema>;
+export type BusinessAgentQueryInput = z.infer<typeof businessAgentQueryInputSchema>;

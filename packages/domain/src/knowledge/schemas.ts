@@ -54,6 +54,10 @@ export const knowledgeQueryInputSchema = z
   })
   .strict();
 
+export const businessAgentQueryInputSchema = z
+  .object({ question: z.string().trim().min(3).max(500) })
+  .strict();
+
 export const knowledgeSourceListQuerySchema = catalogListQueryBaseSchema.strict();
 
 export const knowledgeSourceListResultSchema = catalogListResultMetaSchema
