@@ -4,6 +4,7 @@ import {
   chunkText,
   createKnowledgeSourceInputSchema,
   createMockKnowledgeRepository,
+  evaluateKnowledgeAnswer,
   knowledgeQueryInputSchema,
   knowledgeScopeSchema,
   knowledgeSourceListQuerySchema,
@@ -97,5 +98,22 @@ describe("chunkText", () => {
   });
   it("ignores empty input", () => {
     expect(chunkText("   ")).toEqual([]);
+  });
+});
+
+describe("evaluateKnowledgeAnswer", () => {
+  it("passes a grounded neutral answer", () => {
+    const r = evaluateKnowledgeAnswer({ answer: "Harga private session Rp 550.000.", hasSources: true });
+    expect(r.policyFlags).toEqual([]);
+    expect(r.answer).toContain("550.000");
+  });
+  it("flags a refund promise", () => {
+    const r = evaluateKnowledgeAnswer({ answer: "Kami pasti akan refund penuh.", hasSources: true });
+    expect(r.policyFlags).toContain("refund_promise");
+  });
+  it("returns a safe fallback when there are no sources", () => {
+    const r = evaluateKnowledgeAnswer({ answer: "anything", hasSources: false });
+    expect(r.policyFlags).toContain("no_sources");
+    expect(r.answer.toLowerCase()).toContain("belum ada");
   });
 });
