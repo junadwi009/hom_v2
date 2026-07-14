@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   ClipboardList,
   Clock,
-  Download,
   ScrollText,
   Sparkles,
   Stethoscope,
@@ -242,12 +241,6 @@ export function ApprovalsPage({
           <div className="flex flex-wrap items-center gap-2">
             <Button onClick={() => setShowRules(true)} size="sm" type="button" variant="secondary">
               <ScrollText aria-hidden="true" className="size-4" /> Approval Rules
-            </Button>
-            <Button onClick={() => notify("Ekspor antrean persetujuan belum tersedia.")} size="sm" type="button" variant="secondary">
-              <Download aria-hidden="true" className="size-4" /> Export
-            </Button>
-            <Button onClick={() => notify("Pembuatan request manual segera hadir.")} size="sm" type="button">
-              Create Request
             </Button>
           </div>
         }
