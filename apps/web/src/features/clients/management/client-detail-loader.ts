@@ -14,6 +14,11 @@ import type {
   ClientDetailResult,
   MembershipSummary,
 } from "./client-detail-types";
+import { fetchAllPages } from "./paginate-all";
+
+// Request a large page size when draining the full result set, to keep
+// round-trips low while staying within the catalog schema's max (100).
+const DRAIN_PAGE_SIZE = 100;
 
 type PackageRow = {
   packageName: string;
@@ -144,8 +149,14 @@ async function buildDefaultDeps(): Promise<ClientDetailDeps> {
     permissions,
     fetchPackages: async (clientId) => {
       const repositories = await createPackageRepositories();
-      const result = await repositories.clientPackages.list({ clientId });
-      return result.items.map((item) => ({
+      const items = await fetchAllPages((page) =>
+        repositories.clientPackages.list({
+          clientId,
+          page,
+          pageSize: DRAIN_PAGE_SIZE,
+        }),
+      );
+      return items.map((item) => ({
         packageName: item.packageName,
         status: item.status,
         remainingSessions: item.remainingSessions,
@@ -156,8 +167,10 @@ async function buildDefaultDeps(): Promise<ClientDetailDeps> {
     },
     fetchAppointments: async (clientId) => {
       const repository = await createAppointmentRepository();
-      const result = await repository.list({ clientId });
-      return result.items.map((item) => ({
+      const items = await fetchAllPages((page) =>
+        repository.list({ clientId, page, pageSize: DRAIN_PAGE_SIZE }),
+      );
+      return items.map((item) => ({
         id: item.id,
         startsAt: item.startsAt,
         serviceName: item.serviceName,
@@ -167,11 +180,15 @@ async function buildDefaultDeps(): Promise<ClientDetailDeps> {
     },
     fetchPaidPayments: async (clientId) => {
       const repositories = await createPaymentRepositories();
-      const result = await repositories.payments.list({
-        clientId,
-        status: "paid",
-      });
-      return result.items.map((item) => ({
+      const items = await fetchAllPages((page) =>
+        repositories.payments.list({
+          clientId,
+          status: "paid",
+          page,
+          pageSize: DRAIN_PAGE_SIZE,
+        }),
+      );
+      return items.map((item) => ({
         amountIdr: item.amountIdr,
         paidAt: item.paidAt ?? null,
       }));
