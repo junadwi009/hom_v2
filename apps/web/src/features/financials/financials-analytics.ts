@@ -23,24 +23,19 @@ function parseDate(value: string): Date {
   return new Date(Number.isNaN(time) ? Date.now() : time);
 }
 
-// Reference "today" for period math = the latest entry date so periods always
-// frame the available data (demo-friendly with seeded data); falls back to the
-// real current date when there are no entries.
-function referenceDate(entries: FinancialEntryView[]): Date {
-  if (entries.length === 0) return new Date();
-  let max = parseDate(entries[0].occurredOn).getTime();
-  for (const entry of entries) {
-    const t = parseDate(entry.occurredOn).getTime();
-    if (t > max) max = t;
-  }
-  return new Date(max);
+// Reference "today" for period math = the REAL current date, so "Bulan ini"
+// means the actual current calendar month. (It previously used the latest
+// entry date to be demo-friendly, but that made "revenue this month" disagree
+// with the Overview/Catalog figures, which are anchored to the real clock.)
+function referenceDate(): Date {
+  return new Date();
 }
 
 export function filterByPeriod(
   entries: FinancialEntryView[],
   period: FinancialPeriod,
 ): FinancialEntryView[] {
-  const ref = referenceDate(entries);
+  const ref = referenceDate();
   const refY = ref.getUTCFullYear();
   const refM = ref.getUTCMonth();
 
