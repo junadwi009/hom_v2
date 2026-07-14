@@ -12,6 +12,7 @@ import {
   getApprovalStatusLabel,
   getRiskBadgeTone,
   getRiskLabel,
+  isActiveStatus,
 } from "./approval-helpers";
 import type { ApprovalRequest } from "./approval-types";
 
@@ -91,7 +92,12 @@ export function ApprovalTable({
                 <td
                   className={cn(
                     "px-3 py-3 whitespace-nowrap text-foreground-muted",
-                    req.waitingHours > 24 && "font-medium text-red-600",
+                    // "Overdue" (red) only applies while the request is still
+                    // waiting; a decided request shows a neutral, frozen
+                    // time-to-decision, not an ongoing overdue warning.
+                    isActiveStatus(req.status) &&
+                      req.waitingHours > 24 &&
+                      "font-medium text-red-600",
                   )}
                 >
                   {formatDurationID(req.waitingHours)}
