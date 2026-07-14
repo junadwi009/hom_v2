@@ -3,6 +3,7 @@ export * from "./appointments";
 export * from "./audit";
 export * from "./auth";
 export * from "./catalog";
+export * from "./clinical-cases";
 export * from "./clients";
 export * from "./knowledge";
 export * from "./packages";
