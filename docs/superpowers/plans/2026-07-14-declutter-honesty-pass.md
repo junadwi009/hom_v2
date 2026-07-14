@@ -357,13 +357,19 @@ grep -rn "DemoButton\|DemoIconButton\|DemoLink\|demo-action" apps/web/src/featur
 ```
 Expected: no matches.
 
-- [ ] **Step 3: Confirm the whole app is demo-action-free except the component definition**
+- [ ] **Step 3: Confirm demo actions remain ONLY in hidden sample modules**
 
-Run:
+The KEEP pages must be demo-action-free; the hidden sample modules
+`clients/{leads,segments,tags}` deliberately RETAIN their demo buttons (spec
+hides them from nav but keeps the code), so an app-wide grep is expected to
+still match those. Run:
 ```bash
-grep -rn "<DemoButton\|<DemoIconButton\|<DemoLink" apps/web/src
+grep -rl "<DemoButton\|<DemoIconButton\|<DemoLink" apps/web/src
 ```
-Expected: no matches (every consumer removed; `features/shell/demo-action.tsx` itself remains but is now unused — leave it for potential reuse, or note it as removable in the final task).
+Expected: matches ONLY under `apps/web/src/features/clients/leads`,
+`.../segments`, `.../tags`. Any match outside those three directories is a
+missed KEEP-page removal — fix it. (`features/shell/demo-action.tsx` itself
+remains defined and is still consumed by the hidden modules — leave it.)
 
 - [ ] **Step 4: Typecheck + build**
 
@@ -429,5 +435,5 @@ git commit -m "test(e2e): update app-shell nav assertions for decluttered sideba
 
 - Task 1 is a single coupled change across `routes.ts` + `sidebar-navigation.tsx`; it must end green (both files edited together).
 - Tasks 5, 6, 7 (catalog / clients / settings demo removal) are independent of each other and of Tasks 2–4 — any order, or parallel worktrees.
-- Task 8's Step 3 (final `grep -rn "<DemoButton\|<DemoIconButton\|<DemoLink" apps/web/src` → no matches) is the completeness gate proving Tasks 3–7 removed every consumer.
+- Task 7's Step 3 is the completeness gate for Tasks 3–7: `grep -rl "<DemoButton\|<DemoIconButton\|<DemoLink" apps/web/src` must match ONLY the hidden `clients/{leads,segments,tags}` modules (which retain their code by design) — any match outside those is a missed KEEP-page removal.
 - Do not "improve while you're there" — layout/spacing polish is SP-C, tracked separately.
