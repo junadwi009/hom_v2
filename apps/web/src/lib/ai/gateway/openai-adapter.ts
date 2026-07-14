@@ -4,7 +4,9 @@ import { MODEL_ALIASES } from "./config";
 import type { EmbeddingVector } from "./types";
 
 const TIMEOUT_MS = 20_000;
-export class GatewayError extends Error {}
+export class GatewayError extends Error {
+  name = "GatewayError";
+}
 
 function client(apiKey: string): OpenAI {
   return new OpenAI({ apiKey, timeout: TIMEOUT_MS, maxRetries: 0 });
@@ -48,7 +50,8 @@ export async function openAiExtractImage(
     const content = res.choices[0]?.message?.content;
     if (typeof content !== "string" || content.trim() === "") throw new GatewayError("Empty vision result.");
     return content;
-  } catch {
+  } catch (err) {
+    if (err instanceof GatewayError) throw err;
     throw new GatewayError("Image extraction failed.");
   }
 }
@@ -75,7 +78,8 @@ export async function openAiAnswer(
     const content = res.choices[0]?.message?.content;
     if (typeof content !== "string" || content.trim() === "") throw new GatewayError("Empty answer.");
     return content;
-  } catch {
+  } catch (err) {
+    if (err instanceof GatewayError) throw err;
     throw new GatewayError("Answer generation failed.");
   }
 }
