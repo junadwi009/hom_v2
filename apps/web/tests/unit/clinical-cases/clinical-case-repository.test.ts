@@ -4,9 +4,13 @@ vi.mock("server-only", () => ({}));
 import { listClinicalCasesByClient } from "@/lib/clinical-cases/supabase/clinical-case-repository";
 
 function fakeClient(rows: unknown[] | null, error: unknown = null) {
-  const builder: any = {
-    select: () => builder,
-    eq: () => builder,
+  const builder = {
+    select() {
+      return builder;
+    },
+    eq() {
+      return builder;
+    },
     order: () => Promise.resolve({ data: rows, error }),
   };
   return { from: () => builder };

@@ -35,11 +35,21 @@ export function ClientDetailPanel({ client }: { client: ClientDetailPanelClient 
   // Stale-guard: tracks the id of the most recently requested load so a
   // slow earlier response can never overwrite a newer selection's state.
   const activeRequestIdRef = useRef<string | null>(null);
+  // Tracks which client id `state` currently reflects. When `client.id`
+  // changes we reset to "loading" synchronously during render (the
+  // React-endorsed way to adjust state in response to a prop change)
+  // instead of inside the effect body, which avoids a setState-in-effect
+  // cascade and shows the skeleton immediately rather than one frame late.
+  const [loadedForId, setLoadedForId] = useState(client.id);
+
+  if (client.id !== loadedForId) {
+    setLoadedForId(client.id);
+    setState("loading");
+  }
 
   useEffect(() => {
     const requestedId = client.id;
     activeRequestIdRef.current = requestedId;
-    setState("loading");
 
     loadClientDetailAction(requestedId).then((result) => {
       if (activeRequestIdRef.current !== requestedId) return;
