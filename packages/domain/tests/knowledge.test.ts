@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  chunkText,
   createKnowledgeSourceInputSchema,
   createMockKnowledgeRepository,
   knowledgeQueryInputSchema,
@@ -81,5 +82,20 @@ describe("createMockKnowledgeRepository", () => {
     const first = result.items[0];
     expect(await repo.getById(first.id)).not.toBeNull();
     expect(await repo.getById("00000000-0000-4000-8000-000000000000")).toBeNull();
+  });
+});
+
+describe("chunkText", () => {
+  it("returns one chunk for short text", () => {
+    expect(chunkText("hello world")).toEqual(["hello world"]);
+  });
+  it("splits long text into overlapping chunks", () => {
+    const text = "a".repeat(2500);
+    const chunks = chunkText(text, { maxChars: 1000, overlap: 100 });
+    expect(chunks.length).toBeGreaterThan(2);
+    expect(chunks.every((c) => c.length <= 1000)).toBe(true);
+  });
+  it("ignores empty input", () => {
+    expect(chunkText("   ")).toEqual([]);
   });
 });
