@@ -4,20 +4,23 @@
 > Detail kronologis ada di `docs/logs/{update}_{date}_log.md`; detail per-fase di `docs/PHASE_*_LOG.md`.
 
 - **Terakhir diperbarui:** 2026-07-14
-- **Branch aktif:** `phase-approval-backend` (tip `839885a`)
-- **Log update terbaru:** [`rag-and-business-agent_2026-07-14_log.md`](rag-and-business-agent_2026-07-14_log.md)
+- **Branch aktif:** `phase-audit-fixes` (off `main`; `phase-approval-backend` sudah di-fast-forward ke `main`)
+- **Log update terbaru:** [`audit-fixes_2026-07-14_log.md`](audit-fixes_2026-07-14_log.md)
 
 ## Kondisi terkini (apa yang SUDAH selesai)
-- **Approval backend** (branch dasar `phase-approval-backend`, dari sebelumnya).
-- **SP1 — RAG Knowledge Ingestion** (Knowledge Studio): upload Excel/CSV/PDF/JPG/PNG → ekstrak → review → embed (pgvector) → publish → Test Lab retrieval. LIVE di `/settings/ai-management/knowledge-studio`. Sudah **merged** ke `phase-approval-backend`.
-- **SP2a — AI Business Agent** (Q&A internal dari knowledge base, read-only, scope-limited, audited). LIVE di `/settings/ai-management/business-agent`. Sudah **merged** ke `phase-approval-backend`.
-- Semua gate hijau: domain 146, web 267, typecheck, lint, next build, e2e (knowledge-studio + ai-business-agent).
+- **Approval backend + SP1 RAG + SP2a Business Agent** — semua sudah di `main` (main = tip `phase-approval-backend`, di-ff-merge). Lihat [`rag-and-business-agent_2026-07-14_log.md`](rag-and-business-agent_2026-07-14_log.md).
+- **Perbaikan temuan audit (data honesty)** di branch `phase-audit-fixes`:
+  - Bug #4: timer "Menunggu" dibekukan saat resolusi (migrasi `20260714000300` + relabel UI).
+  - Bug #3: paket expired kini tampil "expired" (helper domain `deriveClientPackageStatus` di display mapper).
+  - Bug #2: "revenue bulan ini" satu sumber kanonik = payments lunas bulan berjalan (loader baru; Catalog tak lagi hardcoded; Financials month-window diselaraskan).
+  - Bug #1: tombol "Create Request" sengaja dibiarkan placeholder (keputusan user).
+- Gate hijau: domain 151, web 272, typecheck, lint, next build. (Migrasi `20260714000300` belum diterapkan ke DB; e2e Playwright terblokir corepack PATH.)
 
 ## Yang BELUM / titik lanjut berikutnya (pilih salah satu)
 1. **SP2-b: Live Chat draft balasan customer** — customer-facing, approval-gated, butuh WhatsApp (belum tersambung). Spec terpisah.
 2. **Grounding data operasional** untuk Business Agent — appointments/clients/finance ringkas, tiap sumber sensitif butuh permission gate + masking.
-3. **Perbaikan temuan audit** (belum dikerjakan): tombol "Create Request" di Approval Center no-op; inkonsistensi angka "revenue bulan ini" antar-halaman (Overview Rp0 vs Financials Rp8,5jt vs Catalog Rp72,5jt); status paket expired masih "active"; timer "Menunggu" jalan di approval yang sudah diputus.
-4. **Merge `phase-approval-backend` → `main` + deploy** (lihat catatan deploy di bawah).
+3. **Fitur "Create Request" manual** di Approval Center (kalau diprioritaskan): form + server action + RPC SECURITY DEFINER + audit.
+4. **Merge `phase-audit-fixes` → `main` + deploy** — terapkan migrasi `20260714000300` (dan 4 migrasi SP1/SP2) ke DB prod dulu; push `main` auto-deploy KODE saja.
 
 ## Cara lanjut / jalankan
 - **Mock mode (default, tanpa DB):** `HOM_AUTH_MODE=mock HOM_DATA_MODE=mock` → hanya UI/preview; orchestrator kembalikan `configuration_error` (pipeline butuh supabase mode).
@@ -26,5 +29,5 @@
 
 ## Catatan penting
 - **AI masih mode MOCK** — belum ada `OPENAI_API_KEY` di env repo. Retrieval/DB/RBAC/audit semua nyata; hanya kualitas embedding+jawaban yang mock. Tambah `OPENAI_API_KEY` ke `apps/web/.env.local` = AI beneran tanpa ubah kode. **OpenRouter TIDAK bisa** untuk inti RAG (tak ada endpoint embeddings); alternatif gratis = Gemini (perlu adapter baru).
-- **Belum di `main`, belum deploy.** Deploy: push `main` auto-deploy KODE, tapi **migrasi DB TIDAK auto-apply** — terapkan 4 migrasi ke DB prod dulu.
+- **`phase-audit-fixes` belum di `main`, belum deploy.** Deploy: push `main` auto-deploy KODE, tapi **migrasi DB TIDAK auto-apply** — terapkan migrasi ke DB prod dulu (4 migrasi SP1/SP2 `20260713*`/`20260714*` + migrasi baru `20260714000300` waiting-hours-freeze).
 - Follow-up terdokumentasi: lihat `docs/PHASE_RAG_1_KNOWLEDGE_INGESTION_LOG.md` (§Known follow-ups) & `docs/PHASE_SP2A_AI_BUSINESS_AGENT_LOG.md`.
