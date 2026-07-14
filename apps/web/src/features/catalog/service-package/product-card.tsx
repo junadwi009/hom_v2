@@ -3,13 +3,11 @@ import {
   Dumbbell,
   Gift,
   Layers,
-  MoreVertical,
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { DemoIconButton } from "@/features/shell/demo-action";
 import { cn } from "@/lib/utils";
 
 import type { Product, ProductStatus, ProductType } from "./service-catalog-data";
@@ -55,13 +53,6 @@ export function ProductCard({ product }: { product: Product }) {
             <p className="text-xs text-foreground-muted">{product.type}</p>
           </div>
         </div>
-        <DemoIconButton
-          className="flex size-7 items-center justify-center rounded-md text-foreground-muted hover:bg-stone-100"
-          label="Aksi produk"
-          message={`Menu aksi untuk ${product.name} (Edit / Duplikat / Arsipkan) — demo.`}
-        >
-          <MoreVertical aria-hidden="true" className="size-4" />
-        </DemoIconButton>
       </header>
 
       <div className="mt-4 flex items-baseline gap-2">

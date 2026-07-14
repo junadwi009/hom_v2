@@ -1,6 +1,4 @@
-import { ChevronDown, Sparkles, SlidersHorizontal } from "lucide-react";
-
-import { DemoButton, DemoLink } from "@/features/shell/demo-action";
+import { ChevronDown, Sparkles } from "lucide-react";
 
 import { serviceAiInsight, serviceFilters } from "./service-catalog-data";
 
@@ -10,12 +8,6 @@ export function ServiceFilterPanel() {
       <section className="rounded-lg border bg-background-card p-5 shadow-[var(--shadow-soft)]">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-foreground">Filter Cepat</h2>
-          <DemoLink
-            className="text-xs font-medium text-amber-800 hover:underline"
-            message="Filter direset (demo)."
-          >
-            Reset
-          </DemoLink>
         </div>
         <div className="space-y-3">
           {serviceFilters.map((filter) => (
@@ -25,16 +17,6 @@ export function ServiceFilterPanel() {
               options={filter.options}
             />
           ))}
-          <DemoButton
-            className="w-full justify-between"
-            message="Advanced Filter dibuka (demo)."
-            size="sm"
-            type="button"
-            variant="secondary"
-          >
-            Advanced Filter
-            <SlidersHorizontal aria-hidden="true" className="size-4" />
-          </DemoButton>
         </div>
       </section>
 
@@ -51,14 +33,6 @@ export function ServiceFilterPanel() {
             </li>
           ))}
         </ul>
-        <DemoButton
-          className="mt-3 w-full"
-          message="Membuka rekomendasi AI untuk produk (demo)."
-          size="sm"
-          type="button"
-        >
-          Lihat Rekomendasi →
-        </DemoButton>
       </section>
 
       <section className="rounded-lg border bg-background-card p-5 shadow-[var(--shadow-soft)]">

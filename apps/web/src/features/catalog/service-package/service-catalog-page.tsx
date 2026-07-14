@@ -11,13 +11,11 @@ import {
   List,
   Search,
   Sparkles,
-  Upload,
 } from "lucide-react";
 import { useState } from "react";
 
 import { ClientsPageHeader } from "@/features/clients/shared/clients-page-header";
 import { ClientKpiRow } from "@/features/clients/shared/clients-kpi-card";
-import { DemoButton } from "@/features/shell/demo-action";
 import { cn } from "@/lib/utils";
 
 import { CreatePackageSheet } from "./create-package-sheet";
@@ -78,15 +76,6 @@ export function ServiceCatalogPage({
       <ClientsPageHeader
         actions={
           <>
-            <DemoButton
-              message="Import produk: pilih file CSV/XLSX (demo)."
-              size="sm"
-              type="button"
-              variant="secondary"
-            >
-              <Upload aria-hidden="true" className="size-4" />
-              Import
-            </DemoButton>
             <CreateServiceSheet action={createServiceAction} canManage={canManage} />
             <CreatePackageSheet action={createPackageAction} canManage={canManage} />
           </>
