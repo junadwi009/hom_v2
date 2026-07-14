@@ -1,9 +1,6 @@
 "use client";
 
-import { FileText, MessageCircle, MoreVertical } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
-import { DemoIconButton } from "@/features/shell/demo-action";
 import { cn } from "@/lib/utils";
 
 import type {
@@ -47,7 +44,6 @@ export function ClientTable({
             <th className="border-b px-3 py-2 font-semibold">Next Booking</th>
             <th className="border-b px-3 py-2 font-semibold">Risk</th>
             <th className="border-b px-3 py-2 font-semibold">Total Spend</th>
-            <th className="border-b px-3 py-2 text-right font-semibold">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -90,31 +86,6 @@ export function ClientTable({
               </td>
               <td className="px-3 py-3 font-medium text-foreground">
                 {client.totalSpend}
-              </td>
-              <td className="px-3 py-3">
-                <div className="flex items-center justify-end gap-1">
-                  <DemoIconButton
-                    className="flex size-8 items-center justify-center rounded-md hover:bg-stone-100"
-                    label="WhatsApp"
-                    message={`Membuka chat WhatsApp ke ${client.name} (demo).`}
-                  >
-                    <MessageCircle className="size-4 text-green-600" aria-hidden="true" />
-                  </DemoIconButton>
-                  <DemoIconButton
-                    className="flex size-8 items-center justify-center rounded-md hover:bg-stone-100"
-                    label="Catatan"
-                    message={`Tambah catatan untuk ${client.name} (demo).`}
-                  >
-                    <FileText className="size-4 text-foreground-muted" aria-hidden="true" />
-                  </DemoIconButton>
-                  <DemoIconButton
-                    className="flex size-8 items-center justify-center rounded-md hover:bg-stone-100"
-                    label="Aksi lain"
-                    message={`Menu aksi untuk ${client.name} (demo).`}
-                  >
-                    <MoreVertical className="size-4 text-foreground-muted" aria-hidden="true" />
-                  </DemoIconButton>
-                </div>
               </td>
             </tr>
           ))}

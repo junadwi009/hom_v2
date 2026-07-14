@@ -3,16 +3,13 @@
 import { ChevronDown, Search } from "lucide-react";
 import { useState } from "react";
 
-import { DemoButton } from "@/features/shell/demo-action";
-
 export type ToolbarFilter = { label: string; options: string[] };
 
-// Presentational toolbar: search + filter selects + reset + bulk action.
+// Presentational toolbar: search + filter selects + reset.
 // Filtering is illustrative (mock data) — wire to real queries when available.
 export function ClientsToolbar({
   searchPlaceholder,
   filters,
-  bulkLabel = "Bulk Action",
   query = "",
   onSearch,
   onFilterChange,
@@ -20,7 +17,6 @@ export function ClientsToolbar({
 }: {
   searchPlaceholder: string;
   filters: ToolbarFilter[];
-  bulkLabel?: string;
   query?: string;
   onSearch?: (value: string) => void;
   onFilterChange?: (label: string, value: string) => void;
@@ -78,17 +74,6 @@ export function ClientsToolbar({
       >
         Reset
       </button>
-
-      <div className="ml-auto">
-        <DemoButton
-          message="Pilih baris dulu untuk aksi massal (demo)."
-          size="sm"
-          type="button"
-        >
-          {bulkLabel}
-          <ChevronDown aria-hidden="true" className="size-4" />
-        </DemoButton>
-      </div>
     </div>
   );
 }

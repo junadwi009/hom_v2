@@ -1,9 +1,7 @@
 "use client";
 
-import { Sparkles, UserCheck, UserPlus, Users, Upload } from "lucide-react";
+import { Sparkles, UserCheck, UserPlus, Users } from "lucide-react";
 import { useState } from "react";
-
-import { DemoButton } from "@/features/shell/demo-action";
 
 import { ClientsPageHeader } from "../shared/clients-page-header";
 import { ClientKpiRow, type ClientKpi } from "../shared/clients-kpi-card";
@@ -110,20 +108,7 @@ export function ClientManagementPage({
   return (
     <div className="space-y-4">
       <ClientsPageHeader
-        actions={
-          <>
-            <DemoButton
-              message="Import client: pilih file CSV/XLSX (demo)."
-              size="sm"
-              type="button"
-              variant="secondary"
-            >
-              <Upload aria-hidden="true" className="size-4" />
-              Import Client
-            </DemoButton>
-            <CreateClientSheet action={createAction} canCreate={canCreate} />
-          </>
-        }
+        actions={<CreateClientSheet action={createAction} canCreate={canCreate} />}
         subtitle="Kelola semua client, pantau status, dan lakukan follow-up lebih efektif."
         title="Client Management"
       />
@@ -154,15 +139,6 @@ export function ClientManagementPage({
                 </li>
               ))}
             </ul>
-            <DemoButton
-              className="shrink-0"
-              message="Membuka rekomendasi AI lengkap untuk retensi & follow-up (demo)."
-              size="sm"
-              type="button"
-              variant="secondary"
-            >
-              Lihat Rekomendasi Lengkap →
-            </DemoButton>
           </div>
         </section>
       )}

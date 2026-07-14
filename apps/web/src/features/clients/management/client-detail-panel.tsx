@@ -1,14 +1,6 @@
-import {
-  CalendarPlus,
-  FileText,
-  MessageCircle,
-  MoreHorizontal,
-  RefreshCw,
-  Sparkles,
-} from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { DemoButton, DemoLink } from "@/features/shell/demo-action";
 
 import { ClientTabs } from "../shared/clients-tabs";
 import { ScoreRing } from "../shared/score-ring";
@@ -40,34 +32,6 @@ export function ClientDetailPanel({ client }: { client: ManagedClient }) {
         </div>
       </header>
 
-      <div className="grid grid-cols-5 gap-1">
-        <PanelAction
-          icon={MessageCircle}
-          label="WhatsApp"
-          message={`Membuka chat WhatsApp ke ${client.name} (demo).`}
-        />
-        <PanelAction
-          icon={CalendarPlus}
-          label="Book Class"
-          message={`Booking kelas untuk ${client.name} (demo).`}
-        />
-        <PanelAction
-          icon={RefreshCw}
-          label="Renew"
-          message={`Perpanjang membership ${client.name} (demo).`}
-        />
-        <PanelAction
-          icon={FileText}
-          label="Add Note"
-          message={`Tambah catatan untuk ${client.name} (demo).`}
-        />
-        <PanelAction
-          icon={MoreHorizontal}
-          label="More"
-          message="Menu aksi lainnya (demo)."
-        />
-      </div>
-
       <ClientTabs tabs={["Overview", "History", "Notes", "Communication"]} />
 
       <div className="grid grid-cols-2 gap-4">
@@ -79,12 +43,6 @@ export function ClientDetailPanel({ client }: { client: ManagedClient }) {
               <p className="text-sm font-semibold text-foreground">
                 {healthLabel(client.healthScore)}
               </p>
-              <DemoLink
-                className="text-xs font-medium text-amber-800 hover:underline"
-                message="Membuka rincian Health Score (demo)."
-              >
-                Lihat detail skor →
-              </DemoLink>
             </div>
           </div>
         </div>
@@ -155,37 +113,8 @@ export function ClientDetailPanel({ client }: { client: ManagedClient }) {
         <p className="mt-1 text-xs leading-5 text-foreground-muted">
           {client.aiRecommendation}
         </p>
-        <DemoButton
-          className="mt-3 w-full"
-          message={`Pesan WhatsApp personal dikirim ke ${client.name} (demo).`}
-          size="sm"
-          type="button"
-        >
-          <MessageCircle aria-hidden="true" className="size-4" />
-          Kirim WhatsApp Personal
-        </DemoButton>
       </div>
     </section>
-  );
-}
-
-function PanelAction({
-  icon: Icon,
-  label,
-  message,
-}: {
-  icon: typeof MessageCircle;
-  label: string;
-  message: string;
-}) {
-  return (
-    <DemoLink
-      className="flex flex-col items-center gap-1 rounded-md px-1 py-2 text-[10px] font-medium text-foreground-muted hover:bg-stone-100 hover:text-foreground"
-      message={message}
-    >
-      <Icon aria-hidden="true" className="size-4" />
-      {label}
-    </DemoLink>
   );
 }
 
