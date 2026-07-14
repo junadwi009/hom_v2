@@ -112,7 +112,10 @@ export function ApprovalDetailPanel({
             <Row label="Cabang" value={request.branch} />
             <Row label="Modul terkait" value={request.relatedModule} />
             <Row label="Record" value={request.relatedRecordLabel} />
-            <Row label="Menunggu" value={formatDurationID(request.waitingHours)} />
+            <Row
+              label={active ? "Menunggu" : "Waktu keputusan"}
+              value={formatDurationID(request.waitingHours)}
+            />
           </dl>
         </div>
 

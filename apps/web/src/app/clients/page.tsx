@@ -1,13 +1,16 @@
 import { ClientManagementPage } from "@/features/clients/management/client-management-page";
 import { createClientAction } from "@/features/clients/management/create-client-action";
+import { loadManagementKpis } from "@/features/clients/management/management-kpis-loader";
 import { loadRealManagedClients } from "@/features/clients/management/managed-clients-loader";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { getDataMode } from "@/lib/env/app-mode";
 
 export const dynamic = "force-dynamic";
 
 export default async function ClientsPage() {
-  const [realClients, currentUser] = await Promise.all([
+  const [realClients, kpis, currentUser] = await Promise.all([
     loadRealManagedClients(),
+    loadManagementKpis(),
     getCurrentUser().catch(() => null),
   ]);
 
@@ -19,6 +22,8 @@ export default async function ClientsPage() {
     <ClientManagementPage
       canCreate={canCreate}
       createAction={createClientAction}
+      dataSource={getDataMode() === "supabase" ? "supabase" : "mock"}
+      kpis={kpis}
       realClients={realClients}
     />
   );

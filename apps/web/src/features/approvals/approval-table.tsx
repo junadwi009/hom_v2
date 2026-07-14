@@ -12,6 +12,7 @@ import {
   getApprovalStatusLabel,
   getRiskBadgeTone,
   getRiskLabel,
+  isActiveStatus,
 } from "./approval-helpers";
 import type { ApprovalRequest } from "./approval-types";
 
@@ -91,23 +92,37 @@ export function ApprovalTable({
                 <td
                   className={cn(
                     "px-3 py-3 whitespace-nowrap text-foreground-muted",
-                    req.waitingHours > 24 && "font-medium text-red-600",
+                    // "Overdue" (red) only applies while the request is still
+                    // waiting; a decided request shows a neutral, frozen
+                    // time-to-decision, not an ongoing overdue warning.
+                    isActiveStatus(req.status) &&
+                      req.waitingHours > 24 &&
+                      "font-medium text-red-600",
                   )}
                 >
                   {formatDurationID(req.waitingHours)}
                 </td>
                 <td className="px-3 py-3 text-right">
-                  <span
+                  {/* Real button so keyboard users can Tab to a row and open it
+                      with Enter/Space; the row onClick stays for mouse users. */}
+                  <button
+                    aria-label={`Lihat detail ${req.title}`}
+                    aria-pressed={active}
                     className={cn(
                       "inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium",
                       active
                         ? "border-accent-gold bg-accent-gold-muted/60 text-amber-900"
                         : "text-foreground-muted",
                     )}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onSelect(req.id);
+                    }}
+                    type="button"
                   >
                     Detail
                     <ChevronRight aria-hidden="true" className="size-3.5" />
-                  </span>
+                  </button>
                 </td>
               </tr>
             );

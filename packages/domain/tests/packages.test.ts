@@ -8,6 +8,7 @@ import {
   createMockClientPackageRepository,
   createMockPackageRepository,
   createMockPackageUsageHistoryRepository,
+  deriveClientPackageStatus,
   mockClientPackages,
   mockPackages,
   mockPackageUsageHistory,
@@ -232,6 +233,46 @@ describe("package domain schemas", () => {
         paymentReference: "not allowed",
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("deriveClientPackageStatus", () => {
+  const now = new Date("2026-07-14T00:00:00.000Z");
+
+  it("reports an active package past its expiry as expired", () => {
+    expect(
+      deriveClientPackageStatus("active", "2026-06-17T02:00:00.000Z", now),
+    ).toBe("expired");
+  });
+
+  it("keeps an active package that has not yet expired as active", () => {
+    expect(
+      deriveClientPackageStatus("active", "2026-07-19T02:00:00.000Z", now),
+    ).toBe("active");
+  });
+
+  it("treats the exact expiry instant as still active (not yet elapsed)", () => {
+    expect(
+      deriveClientPackageStatus("active", "2026-07-14T00:00:00.000Z", now),
+    ).toBe("active");
+  });
+
+  it("never overrides a terminal stored status, even past expiry", () => {
+    expect(
+      deriveClientPackageStatus("depleted", "2026-06-15T02:00:00.000Z", now),
+    ).toBe("depleted");
+    expect(
+      deriveClientPackageStatus("cancelled", "2026-05-29T02:00:00.000Z", now),
+    ).toBe("cancelled");
+    expect(
+      deriveClientPackageStatus("expired", "2026-05-01T02:00:00.000Z", now),
+    ).toBe("expired");
+  });
+
+  it("leaves the stored status untouched when the expiry date is unparseable", () => {
+    expect(deriveClientPackageStatus("active", "not-a-date", now)).toBe(
+      "active",
+    );
   });
 });
 

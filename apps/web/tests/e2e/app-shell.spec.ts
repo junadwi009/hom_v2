@@ -4,7 +4,7 @@ const routes = [
   { path: "/", title: "Strategic Overview" },
   { path: "/dashboard/executive-command", title: "Strategic Overview" },
   { path: "/appointments", title: "Appointments" },
-  { path: "/clients", title: "Clients" },
+  { path: "/clients", title: "Client Management" },
   { path: "/practitioners", title: "Practitioners" },
   { path: "/services", title: "Services" },
   { path: "/packages", title: "Packages" },
@@ -12,7 +12,7 @@ const routes = [
   { path: "/payments", title: "Payments" },
   { path: "/live-chat", title: "Live Chat" },
   { path: "/knowledge-studio", title: "Knowledge Studio" },
-  { path: "/financials", title: "Financials" },
+  { path: "/financials", title: "Financial Overview" },
 ];
 
 test.describe("HOM Studio OS shell", () => {
@@ -48,18 +48,20 @@ test.describe("HOM Studio OS shell", () => {
     });
   });
 
-  test("renders repository-fed mock clients without contact or write controls", async ({ page }) => {
+  test("renders the client management page without raw contact columns", async ({ page }) => {
     await page.goto("/clients");
 
-    await expect(page.getByRole("heading", { name: "Clients", exact: true })).toBeVisible();
-    await expect(page.getByRole("cell", { name: "Mock Client Alpha" }).first()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Client Management", exact: true }),
+    ).toBeVisible();
+    // Mock mode falls back to the labeled local seed roster.
+    await expect(page.getByRole("cell", { name: /Anita Sari/ }).first()).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Client" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Status" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Primary Practitioner" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Risk" })).toBeVisible();
+    // No raw contact data columns.
     await expect(page.getByRole("columnheader", { name: /phone/i })).toHaveCount(0);
     await expect(page.getByRole("columnheader", { name: /email/i })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /create/i })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /edit/i })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /delete/i })).toHaveCount(0);
   });
 

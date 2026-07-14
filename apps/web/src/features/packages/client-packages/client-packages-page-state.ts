@@ -1,4 +1,4 @@
-import type { ClientPackage } from "@hom/domain/packages";
+import { deriveClientPackageStatus, type ClientPackage } from "@hom/domain/packages";
 
 export type ClientPackageDataSource = "mock" | "supabase";
 
@@ -53,7 +53,12 @@ export function toClientPackageTableRow(
       clientPackage.remainingSessions,
       clientPackage.totalSessions,
     ),
-    status: clientPackage.status,
+    // Present the honest effective status: an `active` package past its
+    // `expiresAt` reads as `expired` (the stored column is never flipped).
+    status: deriveClientPackageStatus(
+      clientPackage.status,
+      clientPackage.expiresAt,
+    ),
     updated: toDateLabel(clientPackage.updatedAt),
   };
 }

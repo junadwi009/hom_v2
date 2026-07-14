@@ -16,8 +16,12 @@ import {
 import { useState } from "react";
 
 import { ClientsPageHeader } from "@/features/clients/shared/clients-page-header";
-import { ClientKpiRow } from "@/features/clients/shared/clients-kpi-card";
+import {
+  ClientKpiRow,
+  type ClientKpi,
+} from "@/features/clients/shared/clients-kpi-card";
 import { DemoButton } from "@/features/shell/demo-action";
+import { formatIdr } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { CreatePackageSheet } from "./create-package-sheet";
@@ -53,15 +57,33 @@ export function ServiceCatalogPage({
   createServiceAction,
   createPackageAction,
   canManage = false,
+  revenueMtdIdr = null,
 }: {
   realProducts?: Product[];
   createServiceAction: CatalogCreateFormAction;
   createPackageAction: CatalogCreateFormAction;
   canManage?: boolean;
+  // Canonical current-month settled-payment revenue (same source as the
+  // Executive Overview KPI). null = unavailable (mock mode / query error).
+  revenueMtdIdr?: number | null;
 }) {
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [activeTab, setActiveTab] = useState(0);
+
+  // Replace the demo "Revenue (MTD)" figure with the real settled-payment
+  // total so this page agrees with Overview instead of showing a fabricated
+  // number. Fabricated trend is dropped — we don't have an honest comparison.
+  const kpis: ClientKpi[] = serviceKpis.map((kpi) =>
+    kpi.label === "Revenue (MTD)"
+      ? {
+          ...kpi,
+          value: revenueMtdIdr === null ? "—" : formatIdr(revenueMtdIdr),
+          trend: undefined,
+          helper: "pembayaran lunas bulan ini",
+        }
+      : kpi,
+  );
 
   const catalog = [...realProducts, ...products];
 
@@ -97,7 +119,7 @@ export function ServiceCatalogPage({
 
       <ClientKpiRow
         className="grid-cols-2 sm:grid-cols-3 xl:grid-cols-6"
-        items={serviceKpis}
+        items={kpis}
       />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">

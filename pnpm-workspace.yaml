@@ -3,6 +3,7 @@ packages:
   - "packages/*"
 
 allowBuilds:
+  canvas: false
   esbuild: true
   sharp: true
   unrs-resolver: true

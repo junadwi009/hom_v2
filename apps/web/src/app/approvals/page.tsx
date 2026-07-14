@@ -1,8 +1,10 @@
 import { DashboardCard } from "@/components/hom/dashboard-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
+import { runApprovalAction } from "@/features/approvals/approval-actions";
 import { ApprovalsPage } from "@/features/approvals/approvals-page";
 import { canAccessApprovalCenter } from "@/features/approvals/approval-helpers";
+import { loadApprovalCenterData } from "@/lib/approvals/server/approval-loader";
 import { getCurrentUser } from "@/lib/auth/current-user";
 
 export const dynamic = "force-dynamic";
@@ -12,9 +14,10 @@ export default async function Page({
 }: {
   searchParams: Promise<{ rules?: string }>;
 }) {
-  const [user, params] = await Promise.all([
+  const [user, params, data] = await Promise.all([
     getCurrentUser().catch(() => null),
     searchParams,
+    loadApprovalCenterData(),
   ]);
   const defaultShowRules = params?.rules === "1";
 
@@ -47,5 +50,38 @@ export default async function Page({
     );
   }
 
-  return <ApprovalsPage currentUser={currentUser} defaultShowRules={defaultShowRules} />;
+  // Honest error state: never render an empty worklist / zero KPIs when the
+  // request list simply failed to load.
+  if (data.loadFailed) {
+    return (
+      <>
+        <PageHeader
+          eyebrow="Governance"
+          title="Approval Center"
+          description="Kelola semua permintaan persetujuan lintas modul."
+          actions={<Badge tone="warning">Gangguan data</Badge>}
+        />
+        <DashboardCard
+          title="Data approval tidak dapat dimuat"
+          description="Terjadi gangguan saat mengambil daftar request."
+        >
+          <p className="text-sm leading-6 text-foreground-muted">
+            Muat ulang halaman ini. Bila masalah berlanjut, hubungi administrator
+            studio.
+          </p>
+        </DashboardCard>
+      </>
+    );
+  }
+
+  return (
+    <ApprovalsPage
+      currentUser={currentUser}
+      dataSource={data.source}
+      defaultShowRules={defaultShowRules}
+      initialRequests={data.requests}
+      initialRules={data.rules}
+      runAction={runApprovalAction}
+    />
+  );
 }
