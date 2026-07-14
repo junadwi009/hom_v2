@@ -28,6 +28,45 @@ test.describe("HOM Studio OS shell", () => {
     });
   }
 
+  test("shows the decluttered primary navigation without hidden modules", async ({ page }) => {
+    await page.goto("/");
+    const nav = page.getByRole("navigation", { name: "Primary navigation" });
+    await expect(nav).toBeVisible();
+
+    // KEEP set: top-level links visible without any expansion.
+    for (const label of [
+      "Overview",
+      "Appointments",
+      "Clients",
+      "Practitioners",
+      "Service & Paket",
+      "Client Packages",
+      "Payments",
+      "Financials",
+      "Approval Center",
+    ]) {
+      await expect(nav.getByRole("link", { name: label, exact: true })).toBeVisible();
+    }
+
+    // Clients is a single link now, not a group that expands into Leads/Segments/Tags.
+    await expect(nav.getByRole("button", { name: "Clients" })).toHaveCount(0);
+
+    // The "Segera hadir" coming-soon section and its hidden modules are gone entirely.
+    await expect(nav.getByText("Segera hadir")).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: "Live Chat", exact: true })).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: "Leads", exact: true })).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: "Segments", exact: true })).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: "Tags", exact: true })).toHaveCount(0);
+
+    // Settings still expands to Knowledge Studio, with Behavior Intelligence removed.
+    await nav.getByRole("button", { name: "Settings" }).click();
+    await nav.getByRole("button", { name: "AI Management" }).click();
+    await expect(nav.getByRole("link", { name: "Knowledge Studio", exact: true })).toBeVisible();
+    await expect(
+      nav.getByRole("link", { name: "Behavior Intelligence", exact: true }),
+    ).toHaveCount(0);
+  });
+
   test("returns the mock current user from /api/me", async ({ request }) => {
     const response = await request.get("/api/me");
     const body = await response.json();
