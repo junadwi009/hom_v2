@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-import { catalogIdSchema, catalogListResultMetaSchema, catalogTimestampSchema } from "../catalog";
+import {
+  catalogIdSchema,
+  catalogListQueryBaseSchema,
+  catalogListResultMetaSchema,
+  catalogTimestampSchema,
+} from "../catalog";
 import { knowledgeSourceStatusSchema } from "../rbac";
 
 export const knowledgeScopeSchema = z.enum([
@@ -48,6 +53,8 @@ export const knowledgeQueryInputSchema = z
     scope: knowledgeScopeSchema,
   })
   .strict();
+
+export const knowledgeSourceListQuerySchema = catalogListQueryBaseSchema.strict();
 
 export const knowledgeSourceListResultSchema = catalogListResultMetaSchema
   .extend({ items: z.array(knowledgeSourceSchema) })

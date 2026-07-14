@@ -2,6 +2,7 @@ export {
   createKnowledgeSourceInputSchema,
   knowledgeQueryInputSchema,
   knowledgeScopeSchema,
+  knowledgeSourceListQuerySchema,
   knowledgeSourceListResultSchema,
   knowledgeSourceSchema,
   publishKnowledgeSourceInputSchema,
@@ -15,6 +16,7 @@ export type {
   KnowledgeQueryInput,
   KnowledgeScope,
   KnowledgeSource,
+  KnowledgeSourceListQuery,
   KnowledgeSourceListResult,
   PublishKnowledgeSourceInput,
 } from "./types";

@@ -1,12 +1,6 @@
-import type { KnowledgeSource, KnowledgeSourceListResult } from "./types";
-
-export type KnowledgeSourceListQuery = {
-  search?: string;
-  page?: number;
-  pageSize?: number;
-};
+import type { KnowledgeSource, KnowledgeSourceListQuery, KnowledgeSourceListResult } from "./types";
 
 export type KnowledgeRepository = {
-  list(query?: KnowledgeSourceListQuery): Promise<KnowledgeSourceListResult>;
+  list(query?: Partial<KnowledgeSourceListQuery>): Promise<KnowledgeSourceListResult>;
   getById(id: string): Promise<KnowledgeSource | null>;
 };

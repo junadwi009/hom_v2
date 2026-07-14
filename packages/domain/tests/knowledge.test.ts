@@ -5,6 +5,7 @@ import {
   createMockKnowledgeRepository,
   knowledgeQueryInputSchema,
   knowledgeScopeSchema,
+  knowledgeSourceListQuerySchema,
   knowledgeSourceSchema,
 } from "../src/knowledge";
 
@@ -52,6 +53,19 @@ describe("knowledgeQueryInputSchema", () => {
     expect(() =>
       knowledgeQueryInputSchema.parse({ question: "Berapa harga private?", scope: "public_chatbot" }),
     ).not.toThrow();
+  });
+});
+
+describe("knowledgeSourceListQuerySchema", () => {
+  it("accepts a valid query", () => {
+    expect(() =>
+      knowledgeSourceListQuerySchema.parse({ search: "pricing", page: 1, pageSize: 20 }),
+    ).not.toThrow();
+  });
+  it("rejects an out-of-bounds pageSize", () => {
+    expect(() =>
+      knowledgeSourceListQuerySchema.parse({ page: 1, pageSize: 101 }),
+    ).toThrow();
   });
 });
 

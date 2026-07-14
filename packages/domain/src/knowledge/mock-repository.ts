@@ -2,9 +2,13 @@ import {
   applyCatalogPagination,
   includesCatalogSearch,
 } from "../catalog/mock-utils";
-import type { KnowledgeRepository, KnowledgeSourceListQuery } from "./repository";
-import { knowledgeSourceListResultSchema, knowledgeSourceSchema } from "./schemas";
-import type { KnowledgeSource } from "./types";
+import type { KnowledgeRepository } from "./repository";
+import {
+  knowledgeSourceListQuerySchema,
+  knowledgeSourceListResultSchema,
+  knowledgeSourceSchema,
+} from "./schemas";
+import type { KnowledgeSource, KnowledgeSourceListQuery } from "./types";
 
 export const mockKnowledgeSources = [
   {
@@ -39,20 +43,18 @@ export function createMockKnowledgeRepository(
   const sources = seed.map((source) => knowledgeSourceSchema.parse(source));
 
   return {
-    async list(query: KnowledgeSourceListQuery = {}) {
-      const search = query.search ?? "";
-      const page = query.page ?? 1;
-      const pageSize = query.pageSize ?? 20;
+    async list(query: Partial<KnowledgeSourceListQuery> = {}) {
+      const parsedQuery = knowledgeSourceListQuerySchema.parse(query ?? {});
 
       const filtered = sources.filter((source) =>
-        includesCatalogSearch([source.title, source.docType], search),
+        includesCatalogSearch([source.title, source.docType], parsedQuery.search),
       );
 
       return knowledgeSourceListResultSchema.parse({
-        items: applyCatalogPagination(filtered, { search, page, pageSize }),
+        items: applyCatalogPagination(filtered, parsedQuery),
         total: filtered.length,
-        page,
-        pageSize,
+        page: parsedQuery.page,
+        pageSize: parsedQuery.pageSize,
       });
     },
     async getById(id: string) {
